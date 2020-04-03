@@ -1,7 +1,7 @@
 # Личный проект «Большое путешествие» [![Build status][travis-image]][travis-url]
 
 * Студент: [Ольга Стрекалова](https://up.htmlacademy.ru/ecmascript/11/user/1119951).
-* Наставник: `Неизвестно`.
+* Наставник: [Артемий Бойков](https://htmlacademy.ru/profile/id607755).
 
 ---
 
