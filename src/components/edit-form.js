@@ -36,7 +36,7 @@ export const createEditFormTemplate = (tripEvent) => {
   const picturesList = document.createElement(`div`);
 
   for (let i = 0; i < pictures.length; i++) {
-    picturesList.insertAdjacentHTML(`beforeend`, `<img class="event__photo" src="${pictures[0]}" alt="Event photo"></img>`);
+    picturesList.insertAdjacentHTML(`beforeend`, `<img class="event__photo" src="${pictures[i]}" alt="Event photo"></img>`);
   }
 
 

@@ -31,30 +31,29 @@ const generateOffer = () => {
   };
 };
 
-const generateNewArray = (count, item) => {
+const generateNewArray = (count, action) => {
   return new Array(count)
-    .fill(item);
+    .fill(``)
+    .map(action);
 };
 
 const generateDescription = () => {
-  return generateNewArray(getRandomIntegerNumber(1, 5), getRandomArrayItem(DESCRIPTIONS))
-    .join(`. `);
+  return getRandomArrayItem(DESCRIPTIONS);
+};
+
+const generatePictures = () => {
+  return `http://picsum.photos/248/152?r=${Math.random()}`;
 };
 
 const getRandomDate = () => {
   const newDate = new Date();
   newDate.setFullYear(getRandomIntegerNumber(2020, 2020));
-  newDate.setMonth(getRandomIntegerNumber(1, 2));
+  newDate.setMonth(getRandomIntegerNumber(0, 1));
   newDate.setDate(getRandomIntegerNumber(2, 7));
   newDate.setHours(getRandomIntegerNumber(0, 24));
   newDate.setMinutes(getRandomIntegerNumber(0, 59));
 
   return newDate;
-};
-
-const generateOffers = () => {
-  return generateNewArray(getRandomIntegerNumber(0, 5), ``)
-    .map(generateOffer);
 };
 
 const generateTripEvent = () => {
@@ -65,9 +64,9 @@ const generateTripEvent = () => {
   return {
     type: getRandomArrayItem(EVENT_TYPES),
     destination: getRandomArrayItem(DESTINATIONS),
-    offers: generateOffers(),
-    description: generateDescription(),
-    pictures: generateNewArray(getRandomIntegerNumber(1, 5), `http://picsum.photos/248/152?r=${Math.random()}`),
+    offers: generateNewArray(getRandomIntegerNumber(0, 5), generateOffer),
+    description: generateNewArray(getRandomIntegerNumber(1, 5), generateDescription).join(`. `),
+    pictures: generateNewArray(getRandomIntegerNumber(1, 5), generatePictures),
     start,
     finish,
     price: getRandomIntegerNumber(1, 50) * 10,
@@ -75,6 +74,6 @@ const generateTripEvent = () => {
   };
 };
 
-const tripEvents = generateNewArray(EVENTS_COUNT, ``).map(generateTripEvent).sort((a, b) => a.start - b.start);
+const tripEvents = generateNewArray(EVENTS_COUNT, generateTripEvent).sort((a, b) => a.start - b.start);
 
 export {tripEvents};

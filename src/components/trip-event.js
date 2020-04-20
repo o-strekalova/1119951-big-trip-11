@@ -14,14 +14,14 @@ export const createTripEventTemplate = (tripEvent) => {
   let minutes = ``;
 
   if (duration < HOUR) {
-    minutes = Math.round(duration / MINUTE);
+    minutes = `${Math.round(duration / MINUTE)}`;
   } else if (duration < DAY) {
-    hours = Math.round(duration / HOUR);
-    minutes = Math.round(duration % HOUR / MINUTE);
+    hours = `${Math.round(duration / HOUR)}`;
+    minutes = `${Math.round(duration % HOUR / MINUTE)}`;
   } else {
-    days = Math.round(duration / DAY);
-    hours = Math.round(duration % DAY / HOUR);
-    minutes = Math.round(duration % HOUR / MINUTE);
+    days = `${Math.round(duration / DAY)}`;
+    hours = `${Math.round(duration % DAY / HOUR)}`;
+    minutes = `${Math.round(duration % HOUR / MINUTE)}`;
   }
 
   days = days !== `` ? `${checkNumber(days)}D` : ``;

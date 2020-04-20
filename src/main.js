@@ -32,10 +32,9 @@ render(tripEventsElement, createTripListTemplate());
 
 const tripListElement = tripEventsElement.querySelector(`.trip-days`);
 
-let days = new Set();
-tripEvents.map((it) => {
-  days.add(it.start.toDateString());
-});
+let allDates = Array.from(tripEvents, ({start}) => start.toDateString());
+let days = [...new Set(allDates)];
+
 let count = 1;
 
 for (let day of days) {

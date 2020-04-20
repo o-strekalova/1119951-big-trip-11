@@ -1,17 +1,17 @@
 const TRANSPORT = [`taxi`, `bus`, `train`, `ship`, `transport`, `drive`, `flight`];
 const MONTHS = {
-  '01': `JAN`,
-  '02': `FEB`,
-  '03': `MAR`,
-  '04': `APR`,
-  '05': `MAY`,
-  '06': `JUN`,
-  '07': `JUL`,
-  '08': `AUG`,
-  '09': `SEP`,
-  '10': `OCT`,
-  '11': `NOV`,
-  '12': `DEC`,
+  '00': `JAN`,
+  '01': `FEB`,
+  '02': `MAR`,
+  '03': `APR`,
+  '04': `MAY`,
+  '05': `JUN`,
+  '06': `JUL`,
+  '07': `AUG`,
+  '08': `SEP`,
+  '09': `OCT`,
+  '10': `NOV`,
+  '11': `DEC`,
 };
 
 const getPreposition = (type) => {
