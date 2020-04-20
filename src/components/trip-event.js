@@ -14,19 +14,15 @@ export const createTripEventTemplate = (tripEvent) => {
   let minutes = ``;
 
   if (duration < HOUR) {
-    minutes = `${Math.round(duration / MINUTE)}`;
+    minutes = `${checkNumber(Math.round(duration / MINUTE))}M`;
   } else if (duration < DAY) {
-    hours = `${Math.round(duration / HOUR)}`;
-    minutes = `${Math.round(duration % HOUR / MINUTE)}`;
+    hours = `${checkNumber(Math.round(duration / HOUR))}H`;
+    minutes = `${checkNumber(Math.round(duration % HOUR / MINUTE))}M`;
   } else {
-    days = `${Math.round(duration / DAY)}`;
-    hours = `${Math.round(duration % DAY / HOUR)}`;
-    minutes = `${Math.round(duration % HOUR / MINUTE)}`;
+    days = `${checkNumber(Math.round(duration / DAY))}D`;
+    hours = `${checkNumber(Math.round(duration % DAY / HOUR))}H`;
+    minutes = `${checkNumber(Math.round(duration % HOUR / MINUTE))}M`;
   }
-
-  days = days !== `` ? `${checkNumber(days)}D` : ``;
-  hours = hours !== `` ? `${checkNumber(hours)}H` : ``;
-  minutes = `${checkNumber(minutes)}M`;
 
   duration = `${days} ${hours} ${minutes}`;
 
