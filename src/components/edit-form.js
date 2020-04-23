@@ -1,6 +1,6 @@
-import {getPreposition, deconstructDate} from "./../utils.js";
+import {getPreposition, deconstructDate, createElement} from "./../utils.js";
 
-export const createEditFormTemplate = (tripEvent) => {
+const createEditFormTemplate = (tripEvent) => {
   let {type, destination, offers, description, pictures, start, finish, price} = tripEvent;
 
   const offersTypes = {
@@ -170,3 +170,26 @@ export const createEditFormTemplate = (tripEvent) => {
     </form>`
   );
 };
+
+export default class EditForm {
+  constructor(tripEvent) {
+    this._event = tripEvent;
+    this._element = null;
+  }
+
+  getTemplate() {
+    return createEditFormTemplate(this._event);
+  }
+
+  getElement() {
+    if (!this._element) {
+      this._element = createElement(this.getTemplate());
+    }
+
+    return this._element;
+  }
+
+  removeElement() {
+    this._element = null;
+  }
+}

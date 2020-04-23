@@ -1,6 +1,6 @@
-import {MONTHS, deconstructDate} from "./../utils.js";
+import {MONTHS, deconstructDate, createElement} from "./../utils.js";
 
-export const createTripInfoTemplate = (tripEvents) => {
+const createTripInfoTemplate = (tripEvents) => {
   let cities = [];
 
   tripEvents.map((tripEvent) => {
@@ -25,3 +25,27 @@ export const createTripInfoTemplate = (tripEvents) => {
     </section>`
   );
 };
+
+export default class TripInfo {
+  constructor(tripEvents) {
+    this._events = tripEvents;
+    this._element = null;
+  }
+
+  getTemplate() {
+    return createTripInfoTemplate(this._events);
+  }
+
+  getElement() {
+    if (!this._element) {
+      this._element = createElement(this.getTemplate());
+    }
+
+    return this._element;
+  }
+
+  removeElement() {
+    this._element = null;
+  }
+}
+
