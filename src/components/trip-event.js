@@ -1,6 +1,6 @@
-import {getPreposition, checkNumber} from "./../utils.js";
+import {getPreposition, checkNumber, createElement} from "./../utils.js";
 
-export const createTripEventTemplate = (tripEvent) => {
+const createTripEventTemplate = (tripEvent) => {
   const MINUTE = 60000;
   const HOUR = 3600000;
   const DAY = 86400000;
@@ -73,3 +73,26 @@ export const createTripEventTemplate = (tripEvent) => {
             </li>`
   );
 };
+
+export default class TripEvent {
+  constructor(tripEvent) {
+    this._event = tripEvent;
+    this._element = null;
+  }
+
+  getTemplate() {
+    return createTripEventTemplate(this._event);
+  }
+
+  getElement() {
+    if (!this._element) {
+      this._element = createElement(this.getTemplate());
+    }
+
+    return this._element;
+  }
+
+  removeElement() {
+    this._element = null;
+  }
+}

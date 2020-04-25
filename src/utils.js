@@ -1,5 +1,5 @@
 const TRANSPORT = [`taxi`, `bus`, `train`, `ship`, `transport`, `drive`, `flight`];
-const MONTHS = {
+export const MONTHS = {
   '00': `JAN`,
   '01': `FEB`,
   '02': `MAR`,
@@ -14,7 +14,34 @@ const MONTHS = {
   '11': `DEC`,
 };
 
-const getPreposition = (type) => {
+export const RenderPosition = {
+  AFTERBEGIN: `afterbegin`,
+  BEFOREEND: `beforeend`,
+  AFTER: `after`,
+};
+
+export const createElement = (template) => {
+  const newElement = document.createElement(`div`);
+  newElement.innerHTML = template;
+
+  return newElement.firstChild;
+};
+
+export const render = (container, element, place) => {
+  switch (place) {
+    case RenderPosition.AFTERBEGIN:
+      container.prepend(element);
+      break;
+    case RenderPosition.BEFOREEND:
+      container.append(element);
+      break;
+    case RenderPosition.AFTER:
+      container.after(element);
+      break;
+  }
+};
+
+export const getPreposition = (type) => {
   let preposition = `in`;
   if (TRANSPORT.indexOf(type) > 0) {
     preposition = `to`;
@@ -22,12 +49,12 @@ const getPreposition = (type) => {
   return preposition;
 };
 
-const checkNumber = (number) => {
+export const checkNumber = (number) => {
   number = number < 10 ? `0${number}` : `${number}`;
   return number;
 };
 
-const deconstructDate = (date) => {
+export const deconstructDate = (date) => {
   return {
     year: date.getFullYear(),
     month: checkNumber(date.getMonth()),
@@ -36,5 +63,3 @@ const deconstructDate = (date) => {
     minutes: checkNumber(date.getMinutes()),
   };
 };
-
-export {MONTHS, getPreposition, checkNumber, deconstructDate};
