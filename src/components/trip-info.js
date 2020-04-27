@@ -16,13 +16,11 @@ const createTripInfoTemplate = (tripEvents) => {
   let {month: lastMonth, day: lastDay} = lastDate;
 
   return (
-    `<section class="trip-main__trip-info  trip-info">
-      <div class="trip-info__main">
-        <h1 class="trip-info__title">${cities[0]} &mdash; ${middleValue} &mdash; ${cities[cities.length - 1]}</h1>
+    `<div class="trip-info__main">
+      <h1 class="trip-info__title">${cities[0]} &mdash; ${middleValue} &mdash; ${cities[cities.length - 1]}</h1>
 
-        <p class="trip-info__dates">${firstDay} ${MONTHS[firstMonth]}&nbsp;&mdash;&nbsp;${lastDay} ${MONTHS[lastMonth]}</p>
-      </div>
-    </section>`
+      <p class="trip-info__dates">${firstDay} ${MONTHS[firstMonth]}&nbsp;&mdash;&nbsp;${lastDay} ${MONTHS[lastMonth]}</p>
+    </div>`
   );
 };
 
@@ -48,4 +46,3 @@ export default class TripInfo {
     this._element = null;
   }
 }
-
