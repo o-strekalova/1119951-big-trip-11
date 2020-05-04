@@ -1,4 +1,5 @@
-import {getPreposition, deconstructDate, createElement} from "./../utils.js";
+import {getPreposition, deconstructDate} from "./../utils/common.js";
+import AbstractComponent from "./abstract-component.js";
 
 const createEditFormTemplate = (tripEvent) => {
   let {type, destination, offers, description, pictures, start, finish, price} = tripEvent;
@@ -171,25 +172,29 @@ const createEditFormTemplate = (tripEvent) => {
   );
 };
 
-export default class EditForm {
+export default class EditForm extends AbstractComponent {
   constructor(tripEvent) {
+    super();
     this._event = tripEvent;
-    this._element = null;
   }
 
   getTemplate() {
     return createEditFormTemplate(this._event);
   }
 
-  getElement() {
-    if (!this._element) {
-      this._element = createElement(this.getTemplate());
-    }
-
-    return this._element;
+  setSubmitHandler(cb) {
+    this.getElement().addEventListener(`submit`, cb);
   }
 
-  removeElement() {
-    this._element = null;
+  setResetHandler(cb) {
+    this.getElement().querySelector(`.event__reset-btn`).addEventListener(`click`, cb);
+  }
+
+  removeSubmitHandler(cb) {
+    this.getElement().removeEventListener(`submit`, cb);
+  }
+
+  removeResetHandler(cb) {
+    this.getElement().querySelector(`.event__reset-btn`).removeEventListener(`click`, cb);
   }
 }

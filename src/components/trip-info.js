@@ -1,4 +1,5 @@
-import {MONTHS, deconstructDate, createElement} from "./../utils.js";
+import {MONTHS, deconstructDate} from "./../utils/common.js";
+import AbstractComponent from "./abstract-component.js";
 
 const createTripInfoTemplate = (tripEvents) => {
   let cities = [];
@@ -24,25 +25,13 @@ const createTripInfoTemplate = (tripEvents) => {
   );
 };
 
-export default class TripInfo {
+export default class TripInfo extends AbstractComponent {
   constructor(tripEvents) {
+    super();
     this._events = tripEvents;
-    this._element = null;
   }
 
   getTemplate() {
     return createTripInfoTemplate(this._events);
-  }
-
-  getElement() {
-    if (!this._element) {
-      this._element = createElement(this.getTemplate());
-    }
-
-    return this._element;
-  }
-
-  removeElement() {
-    this._element = null;
   }
 }
