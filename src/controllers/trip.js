@@ -1,11 +1,13 @@
 import TripInfo from "./../components/trip-info.js";
-import Sort from "./../components/sort.js";
+import Sort, {SortType} from "./../components/sort.js";
 import EditForm from "./../components/edit-form.js";
 import TripList from "./../components/trip-list.js";
 import TripDay from "./../components/trip-day.js";
 import TripEvent from "./../components/trip-event.js";
 import NoEvents from "./../components/no-events.js";
 import {render, RenderPosition} from "./../utils/render.js";
+
+const tripEventsElement = document.querySelector(`.trip-events`);
 
 const renderEvent = (tripEvent, currentEventsList) => {
   const replaceEventToEdit = () => {
@@ -39,6 +41,40 @@ const renderEvent = (tripEvent, currentEventsList) => {
   render(currentEventsList, tripEventComponent, RenderPosition.BEFOREEND);
 };
 
+const renderDays = (tripEvents) => {
+  const tripListElement = tripEventsElement.querySelector(`.trip-days`);
+  let allDates = Array.from(tripEvents, ({start}) => start.toDateString());
+  let days = [...new Set(allDates)];
+
+  let count = 1;
+
+  for (let day of days) {
+    day = new Date(day);
+    render(tripListElement, new TripDay(day, count++), RenderPosition.BEFOREEND);
+    let events = tripListElement.querySelectorAll(`.trip-events__list`);
+    let dateEvents = tripEvents.slice().filter((tripEvent) => tripEvent.start.toDateString() === day.toDateString());
+    dateEvents.map((dateEvent) => renderEvent(dateEvent, events[count - 2]));
+  }
+};
+
+const getSortedEvents = (tripEvents, sortType) => {
+  let sortedEvents = [];
+
+  switch (sortType) {
+    case SortType.EVENT:
+      sortedEvents = tripEvents.slice().sort((a, b) => a.start - b.start);
+      break;
+    case SortType.TIME:
+      sortedEvents = tripEvents.slice().sort((a, b) => (b.finish - b.start) - (a.finish - a.start));
+      break;
+    case SortType.PRICE:
+      sortedEvents = tripEvents.slice().sort((a, b) => b.price - a.price);
+      break;
+  }
+
+  return sortedEvents;
+};
+
 export default class TripController {
   constructor(container) {
     this._container = container;
@@ -50,7 +86,6 @@ export default class TripController {
 
   render(tripEvents) {
     const tripMainElement = document.querySelector(`.trip-main`);
-    const tripEventsElement = document.querySelector(`.trip-events`);
     const eventsTitleElement = tripEventsElement.querySelector(`.trip-events h2`);
 
     if (tripEvents.length === 0) {
@@ -62,20 +97,22 @@ export default class TripController {
     render(tripInfoElement, new TripInfo(tripEvents), RenderPosition.AFTERBEGIN);
     render(eventsTitleElement, this._sort, RenderPosition.AFTER);
     render(tripEventsElement, this._tripList, RenderPosition.BEFOREEND);
+    renderDays(tripEvents);
 
-    const tripListElement = tripEventsElement.querySelector(`.trip-days`);
+    this._sort.setSortTypeChangeHandler((sortType) => {
+      const sortedEvents = getSortedEvents(tripEvents, sortType);
+      const tripListElement = tripEventsElement.querySelector(`.trip-days`);
+      tripListElement.innerHTML = ``;
 
-    let allDates = Array.from(tripEvents, ({start}) => start.toDateString());
-    let days = [...new Set(allDates)];
-
-    let count = 1;
-
-    for (let day of days) {
-      day = new Date(day);
-      render(tripListElement, new TripDay(day, count++), RenderPosition.BEFOREEND);
-      let events = tripListElement.querySelectorAll(`.trip-events__list`);
-      let dateEvents = tripEvents.slice().filter((tripEvent) => tripEvent.start.toDateString() === day.toDateString());
-      dateEvents.map((dateEvent) => renderEvent(dateEvent, events[count - 2]));
-    }
+      if (sortType === SortType.EVENT) {
+        renderDays(tripEvents);
+      } else {
+        render(tripListElement, new TripDay(new Date(), ``), RenderPosition.BEFOREEND);
+        const dayInfo = tripListElement.querySelector(`.day__info`);
+        dayInfo.innerHTML = ``;
+        const eventsList = tripListElement.querySelector(`.trip-events__list`);
+        sortedEvents.map((tripEvent) => renderEvent(tripEvent, eventsList));
+      }
+    });
   }
 }
