@@ -3,9 +3,9 @@ import AbstractComponent from "./abstract-component.js";
 
 const createTripDayTemplate = (date, count) => {
 
-  let deconstrutedDate = deconstructDate(date);
-  let {year, month, day} = deconstrutedDate;
-  let datetime = `${year}-${month}-${day}`;
+  const deconstrutedDate = deconstructDate(date);
+  const {year, month, day} = deconstrutedDate;
+  const datetime = `${year}-${month}-${day}`;
 
   return (
     `<li class="trip-days__item  day">

@@ -33,8 +33,8 @@ const createTripEventTemplate = (tripEvent) => {
   const offersList = document.createElement(`ul`);
 
   for (let i = 0; i < offers.length; i++) {
-    let currentOffer = offers[i];
-    let {offerTitle, offerPrice} = currentOffer;
+    const currentOffer = offers[i];
+    const {offerTitle, offerPrice} = currentOffer;
     offersList.insertAdjacentHTML(`beforeend`, `<li class="event__offer">
                                     <span class="event__offer-title">${offerTitle}</span>
                                     &plus;
@@ -87,9 +87,5 @@ export default class TripEvent extends AbstractComponent {
 
   setEditButtonHandler(cb) {
     this.getElement().querySelector(`.event__rollup-btn`).addEventListener(`click`, cb);
-  }
-
-  removeEditButtonHandler(cb) {
-    this.getElement().querySelector(`.event__rollup-btn`).removeEventListener(`click`, cb);
   }
 }

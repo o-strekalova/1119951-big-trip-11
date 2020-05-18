@@ -1,17 +1,17 @@
 const TRANSPORT = [`taxi`, `bus`, `train`, `ship`, `transport`, `drive`, `flight`];
 export const MONTHS = {
-  '00': `JAN`,
-  '01': `FEB`,
-  '02': `MAR`,
-  '03': `APR`,
-  '04': `MAY`,
-  '05': `JUN`,
-  '06': `JUL`,
-  '07': `AUG`,
-  '08': `SEP`,
-  '09': `OCT`,
-  '10': `NOV`,
-  '11': `DEC`,
+  '01': `JAN`,
+  '02': `FEB`,
+  '03': `MAR`,
+  '04': `APR`,
+  '05': `MAY`,
+  '06': `JUN`,
+  '07': `JUL`,
+  '08': `AUG`,
+  '09': `SEP`,
+  '10': `OCT`,
+  '11': `NOV`,
+  '12': `DEC`,
 };
 
 export const getPreposition = (type) => {
@@ -30,7 +30,7 @@ export const checkNumber = (number) => {
 export const deconstructDate = (date) => {
   return {
     year: date.getFullYear(),
-    month: checkNumber(date.getMonth()),
+    month: checkNumber(date.getMonth() + 1),
     day: checkNumber(date.getDate()),
     hours: checkNumber(date.getHours()),
     minutes: checkNumber(date.getMinutes()),
