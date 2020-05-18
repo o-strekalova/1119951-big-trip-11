@@ -47,40 +47,6 @@ const getSortedEvents = (tripEvents, sortType) => {
   return sortedEvents;
 };
 
-const renderDays = (tripEvents) => {
-  const tripListElement = tripEventsElement.querySelector(`.trip-days`);
-  let allDates = Array.from(tripEvents, ({start}) => start.toDateString());
-  let days = [...new Set(allDates)];
-
-  let count = 1;
-
-  for (let day of days) {
-    day = new Date(day);
-    render(tripListElement, new TripDay(day, count++), RenderPosition.BEFOREEND);
-    let events = tripListElement.querySelectorAll(`.trip-events__list`);
-    let dateEvents = tripEvents.slice().filter((tripEvent) => tripEvent.start.toDateString() === day.toDateString());
-    dateEvents.map((dateEvent) => renderEvent(dateEvent, events[count - 2]));
-  }
-};
-
-const getSortedEvents = (tripEvents, sortType) => {
-  let sortedEvents = [];
-
-  switch (sortType) {
-    case SortType.EVENT:
-      sortedEvents = tripEvents.slice().sort((a, b) => a.start - b.start);
-      break;
-    case SortType.TIME:
-      sortedEvents = tripEvents.slice().sort((a, b) => (b.finish - b.start) - (a.finish - a.start));
-      break;
-    case SortType.PRICE:
-      sortedEvents = tripEvents.slice().sort((a, b) => b.price - a.price);
-      break;
-  }
-
-  return sortedEvents;
-};
-
 export default class TripController {
   constructor(container) {
     this._container = container;
