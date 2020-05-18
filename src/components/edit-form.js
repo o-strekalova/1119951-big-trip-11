@@ -1,21 +1,19 @@
-import {getPreposition, deconstructDate} from "./../utils/common.js";
+import {getPreposition} from "./../utils/common.js";
 import AbstractSmartComponent from "./abstract-smart-component.js";
 import {offersForTypes} from "./../mock/offers-for-types.js";
 import {destinations} from "./../mock/destinations.js";
+import flatpickr from "flatpickr";
+
+import "flatpickr/dist/flatpickr.min.css";
 
 const createEditFormTemplate = (tripEvent) => {
-  const {type, destination, offers: chosenOffers, start, finish, price, isFavorite} = tripEvent;
+  const {type, destination, offers: chosenOffers, price, isFavorite} = tripEvent;
   const chosenDestination = destinations.find((it) => it.name === destination);
   const chosenTypeOfOffers = offersForTypes.find((it) => it.type === type);
   const availableOffers = chosenTypeOfOffers.offers;
   const isOfferChecked = (currentOffer) => {
     return chosenOffers.indexOf(currentOffer) >= 0;
   };
-
-  const startTime = deconstructDate(start);
-  const {year: startYear, month: startMonth, day: startDay, hours: startHours, minutes: startMinutes} = startTime;
-  const finishTime = deconstructDate(finish);
-  const {year: finishYear, month: finishMonth, day: finishDay, hours: finishHours, minutes: finishMinutes} = finishTime;
 
   const offersList = document.createElement(`div`);
 
@@ -127,12 +125,12 @@ const createEditFormTemplate = (tripEvent) => {
           <label class="visually-hidden" for="event-start-time-1">
             From
           </label>
-          <input class="event__input  event__input--time" id="event-start-time-1" type="text" name="event-start-time" value="${startDay}/${startMonth}/${startYear.toString().substr(-2)} ${startHours}:${startMinutes}">
+          <input class="event__input  event__input--time" id="event-start-time-1" type="text" name="event-start-time" value="">
           &mdash;
           <label class="visually-hidden" for="event-end-time-1">
             To
           </label>
-          <input class="event__input  event__input--time" id="event-end-time-1" type="text" name="event-end-time" value="${finishDay}/${finishMonth}/${finishYear.toString().substr(-2)} ${finishHours}:${finishMinutes}">
+          <input class="event__input  event__input--time" id="event-end-time-1" type="text" name="event-end-time" value="">
         </div>
 
         <div class="event__field-group  event__field-group--price">
@@ -186,9 +184,12 @@ export default class EditForm extends AbstractSmartComponent {
   constructor(tripEvent) {
     super();
     this._event = tripEvent;
+    this._flatpickrForStart = null;
+    this._flatpickrForEnd = null;
 
     this._handler = null;
     this._subscribeOnEvents();
+    this._applyFlatpickr();
   }
 
   getTemplate() {
@@ -201,6 +202,11 @@ export default class EditForm extends AbstractSmartComponent {
     this.setRollUpHandler(this._handler);
 
     this._subscribeOnEvents();
+  }
+
+  rerender() {
+    super.rerender();
+    this._applyFlatpickr();
   }
 
   setSubmitHandler(cb) {
@@ -218,6 +224,35 @@ export default class EditForm extends AbstractSmartComponent {
 
   setFavoriteButtonClickHandler(cb) {
     this.getElement().querySelector(`.event__favorite-checkbox`).addEventListener(`change`, cb);
+  }
+
+  _applyFlatpickr() {
+    const destroyFlatpickr = (currentFlatpickr) => {
+      if (currentFlatpickr) {
+        currentFlatpickr.destroy();
+        currentFlatpickr = null;
+      }
+    };
+
+    destroyFlatpickr(this._flatpickrForStart);
+    destroyFlatpickr(this._flatpickrForEnd);
+
+    const startDateElement = this.getElement().querySelector(`#event-start-time-1`);
+    this._flatpickrForStart = flatpickr(startDateElement, {
+      enableTime: true,
+      time_24hr: true,
+      dateFormat: `d/m/Y H:i`,
+      defaultDate: this._event.start || `today`,
+    });
+
+    const endDateElement = this.getElement().querySelector(`#event-end-time-1`);
+    this._flatpickrForEnd = flatpickr(endDateElement, {
+      enableTime: true,
+      time_24hr: true,
+      dateFormat: `d/m/Y H:i`,
+      minDate: this._event.start,
+      defaultDate: this._event.finish || `today`,
+    });
   }
 
   _subscribeOnEvents() {

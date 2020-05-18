@@ -1,17 +1,25 @@
+import moment from "moment";
+
 const TRANSPORT = [`taxi`, `bus`, `train`, `ship`, `transport`, `drive`, `flight`];
-export const MONTHS = {
-  '01': `JAN`,
-  '02': `FEB`,
-  '03': `MAR`,
-  '04': `APR`,
-  '05': `MAY`,
-  '06': `JUN`,
-  '07': `JUL`,
-  '08': `AUG`,
-  '09': `SEP`,
-  '10': `OCT`,
-  '11': `NOV`,
-  '12': `DEC`,
+
+export const formatTime = (date) => {
+  return moment(date).format(`hh:mm`);
+};
+
+export const formatDate = (date) => {
+  return moment(date).format(`YYYY-MM-DD`);
+};
+
+export const formatMonth = (date) => {
+  return moment(date).format(`MMM DD`);
+};
+
+export const formatDays = (date) => {
+  if (date > 86400000) {
+    return moment(date).format(`DD[D] hh[H] mm[M]`);
+  } else {
+    return moment(date).format(`hh[H] mm[M]`);
+  }
 };
 
 export const getPreposition = (type) => {
@@ -20,19 +28,4 @@ export const getPreposition = (type) => {
     preposition = `to`;
   }
   return preposition;
-};
-
-export const checkNumber = (number) => {
-  number = number < 10 ? `0${number}` : `${number}`;
-  return number;
-};
-
-export const deconstructDate = (date) => {
-  return {
-    year: date.getFullYear(),
-    month: checkNumber(date.getMonth() + 1),
-    day: checkNumber(date.getDate()),
-    hours: checkNumber(date.getHours()),
-    minutes: checkNumber(date.getMinutes()),
-  };
 };

@@ -1,4 +1,4 @@
-import {MONTHS, deconstructDate} from "./../utils/common.js";
+import {formatMonth} from "./../utils/common.js";
 import AbstractComponent from "./abstract-component.js";
 
 const createTripInfoTemplate = (tripEvents) => {
@@ -11,16 +11,14 @@ const createTripInfoTemplate = (tripEvents) => {
 
   const middleValue = cities.length > 3 ? `...` : cities[1];
 
-  const firstDate = deconstructDate(tripEvents[0].start);
-  const {month: firstMonth, day: firstDay} = firstDate;
-  const lastDate = deconstructDate(tripEvents[tripEvents.length - 1].finish);
-  const {month: lastMonth, day: lastDay} = lastDate;
+  const firstDate = formatMonth(tripEvents[0].start);
+  const lastDate = formatMonth(tripEvents[tripEvents.length - 1].finish);
 
   return (
     `<div class="trip-info__main">
       <h1 class="trip-info__title">${cities[0]} &mdash; ${middleValue} &mdash; ${cities[cities.length - 1]}</h1>
 
-      <p class="trip-info__dates">${firstDay} ${MONTHS[firstMonth]}&nbsp;&mdash;&nbsp;${lastDay} ${MONTHS[lastMonth]}</p>
+      <p class="trip-info__dates">${firstDate}&nbsp;&mdash;&nbsp;${lastDate}</p>
     </div>`
   );
 };

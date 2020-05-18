@@ -1,34 +1,11 @@
-import {getPreposition, checkNumber} from "./../utils/common.js";
+import {getPreposition, formatTime, formatDays} from "./../utils/common.js";
 import AbstractComponent from "./abstract-component.js";
 
 const createTripEventTemplate = (tripEvent) => {
-  const MINUTE = 60000;
-  const HOUR = 3600000;
-  const DAY = 86400000;
 
   let {type, destination, offers, start, finish, price} = tripEvent;
 
-  let duration = finish - start;
-
-  let days = ``;
-  let hours = ``;
-  let minutes = ``;
-
-  if (duration < HOUR) {
-    minutes = `${checkNumber(Math.round(duration / MINUTE))}M`;
-  } else if (duration < DAY) {
-    hours = `${checkNumber(Math.round(duration / HOUR))}H`;
-    minutes = `${checkNumber(Math.round(duration % HOUR / MINUTE))}M`;
-  } else {
-    days = `${checkNumber(Math.round(duration / DAY))}D`;
-    hours = `${checkNumber(Math.round(duration % DAY / HOUR))}H`;
-    minutes = `${checkNumber(Math.round(duration % HOUR / MINUTE))}M`;
-  }
-
-  duration = `${days} ${hours} ${minutes}`;
-
-  start = start.toLocaleTimeString([], {hour: `2-digit`, minute: `2-digit`});
-  finish = finish.toLocaleTimeString([], {hour: `2-digit`, minute: `2-digit`});
+  let duration = formatDays(finish - start);
 
   const offersList = document.createElement(`ul`);
 
@@ -51,9 +28,9 @@ const createTripEventTemplate = (tripEvent) => {
 
                 <div class="event__schedule">
                   <p class="event__time">
-                    <time class="event__start-time" datetime="${start}">${start}</time>
+                    <time class="event__start-time" datetime="${formatTime(start)}">${formatTime(start)}</time>
                     &mdash;
-                    <time class="event__end-time" datetime="${finish}">${finish}</time>
+                    <time class="event__end-time" datetime="${formatTime(finish)}">${formatTime(finish)}</time>
                   </p>
                   <p class="event__duration">${duration}</p>
                 </div>

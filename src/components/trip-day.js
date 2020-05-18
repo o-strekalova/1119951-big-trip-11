@@ -1,17 +1,15 @@
-import {MONTHS, deconstructDate} from "./../utils/common.js";
+import {formatDate, formatMonth} from "./../utils/common.js";
 import AbstractComponent from "./abstract-component.js";
 
 const createTripDayTemplate = (date, count) => {
-
-  const deconstrutedDate = deconstructDate(date);
-  const {year, month, day} = deconstrutedDate;
-  const datetime = `${year}-${month}-${day}`;
+  const datetime = formatDate(date);
+  const monthDay = formatMonth(date);
 
   return (
     `<li class="trip-days__item  day">
       <div class="day__info">
         <span class="day__counter">${count}</span>
-        <time class="day__date" datetime="${datetime}">${MONTHS[month]} ${day}</time>
+        <time class="day__date" datetime="${datetime}">${monthDay}</time>
       </div>
 
       <ul class="trip-events__list">
