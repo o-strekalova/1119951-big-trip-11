@@ -4,11 +4,11 @@ const createTripCostTemplate = (tripEvents) => {
   let total = 0;
 
   tripEvents.map((tripEvent) => {
-    let {offers, price} = tripEvent;
+    const {offers, price} = tripEvent;
     total += price;
 
     offers.map((offer) => {
-      let {offerPrice} = offer;
+      const {offerPrice} = offer;
       total += offerPrice;
     });
   });

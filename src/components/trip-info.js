@@ -2,19 +2,19 @@ import {MONTHS, deconstructDate} from "./../utils/common.js";
 import AbstractComponent from "./abstract-component.js";
 
 const createTripInfoTemplate = (tripEvents) => {
-  let cities = [];
+  const cities = [];
 
   tripEvents.map((tripEvent) => {
-    let {destination} = tripEvent;
+    const {destination} = tripEvent;
     cities.push(destination);
   });
 
-  let middleValue = cities.length > 3 ? `...` : cities[1];
+  const middleValue = cities.length > 3 ? `...` : cities[1];
 
-  let firstDate = deconstructDate(tripEvents[0].start);
-  let {month: firstMonth, day: firstDay} = firstDate;
-  let lastDate = deconstructDate(tripEvents[tripEvents.length - 1].finish);
-  let {month: lastMonth, day: lastDay} = lastDate;
+  const firstDate = deconstructDate(tripEvents[0].start);
+  const {month: firstMonth, day: firstDay} = firstDate;
+  const lastDate = deconstructDate(tripEvents[tripEvents.length - 1].finish);
+  const {month: lastMonth, day: lastDay} = lastDate;
 
   return (
     `<div class="trip-info__main">
