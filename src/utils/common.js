@@ -7,7 +7,7 @@ export const formatTime = (date) => {
 };
 
 export const formatDate = (date) => {
-  return moment(date).format(`YYYY-MM-DD`);
+  return moment(date).format(`YYYY-MM-DD[T]hh:mm`);
 };
 
 export const formatMonth = (date) => {

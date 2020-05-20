@@ -1,4 +1,4 @@
-import {getPreposition, formatTime, formatDays} from "./../utils/common.js";
+import {getPreposition, formatTime, formatDays, formatDate} from "./../utils/common.js";
 import AbstractComponent from "./abstract-component.js";
 
 const createTripEventTemplate = (tripEvent) => {
@@ -28,9 +28,9 @@ const createTripEventTemplate = (tripEvent) => {
 
                 <div class="event__schedule">
                   <p class="event__time">
-                    <time class="event__start-time" datetime="${formatTime(start)}">${formatTime(start)}</time>
+                    <time class="event__start-time" datetime="${formatDate(start)}">${formatTime(start)}</time>
                     &mdash;
-                    <time class="event__end-time" datetime="${formatTime(finish)}">${formatTime(finish)}</time>
+                    <time class="event__end-time" datetime="${formatDate(finish)}">${formatTime(finish)}</time>
                   </p>
                   <p class="event__duration">${duration}</p>
                 </div>
