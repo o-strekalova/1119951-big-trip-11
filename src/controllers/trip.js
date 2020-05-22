@@ -48,8 +48,10 @@ const getSortedEvents = (tripEvents, sortType) => {
 };
 
 export default class TripController {
-  constructor(container) {
+  constructor(container, pointsModel) {
     this._container = container;
+    this._pointsModel = pointsModel;
+
     this._tripEvents = [];
     this._pointControllers = pointControllers;
 
@@ -63,12 +65,12 @@ export default class TripController {
     this._sort.setSortTypeChangeHandler(this._onSortTypeChange);
   }
 
-  render(tripEvents) {
-    this._tripEvents = tripEvents;
+  render() {
+    this._tripEvents = this._pointsModel.getPoints();
     const tripMainElement = document.querySelector(`.trip-main`);
     const eventsTitleElement = tripEventsElement.querySelector(`.trip-events h2`);
 
-    if (tripEvents.length === 0) {
+    if (this._tripEvents.length === 0) {
       render(eventsTitleElement, this._noEvents, RenderPosition.AFTER);
       return;
     }
