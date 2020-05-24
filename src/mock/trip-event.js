@@ -5,8 +5,8 @@ const EVENTS_COUNT = 20;
 
 const generateOffer = () => {
   return {
-    offerTitle: getRandomArrayItem(OFFER_TITLES),
-    offerPrice: getRandomIntegerNumber(1, 50) * 10,
+    title: getRandomArrayItem(OFFER_TITLES),
+    price: getRandomIntegerNumber(1, 50) * 10,
   };
 };
 

@@ -2,40 +2,99 @@ import {getPreposition} from "./../utils/common.js";
 import AbstractSmartComponent from "./abstract-smart-component.js";
 import {offersForTypes} from "./../mock/offers-for-types.js";
 import {destinations} from "./../mock/destinations.js";
+import {Mode} from "./../controllers/point.js";
+import {createStartFlatpickr, createFinishFlatpickr} from "./../utils/flatpickr.js";
 import flatpickr from "flatpickr";
 
 import "flatpickr/dist/flatpickr.min.css";
 
-const createEditFormTemplate = (tripEvent) => {
+const TRANSPORTS = [`taxi`, `bus`, `train`, `ship`, `transport`, `drive`, `flight`];
+const ACTIVITIES = [`check-in`, `sightseeing`, `restaurant`];
+const DESTINATIONS = [`Amsterdam`, `Geneva`, `Chamonix`, `Saint-Petersburg`];
+
+const createTypeInputMarkup = (eventTypes, checkedType) => {
+  return eventTypes
+    .map((eventType) => {
+      const isChecked = eventType === checkedType;
+      return (
+        `<div class="event__type-item">
+          <input id="event-type-${eventType}-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="${eventType}" ${isChecked ? `checked` : ``}>
+          <label class="event__type-label  event__type-label--${eventType}" for="event-type-${eventType}-1">${eventType.charAt(0).toUpperCase() + eventType.slice(1)}</label>
+        </div>`
+      );
+    })
+    .join(`\n`);
+};
+
+const createDestinationSelectMarkup = (allDestinations, selectedDestination) => {
+  return allDestinations
+    .map((destination) => {
+      const isSelected = destination === selectedDestination;
+      return (
+        `<option value="${destination}" ${isSelected ? `selected` : ``}>${destination}</option>`
+      );
+    })
+    .join(`\n`);
+};
+
+const createOffersMarkup = (availableOffers, chosenOffers) => {
+  return availableOffers
+    .map((offer) => {
+      const isOfferChecked = chosenOffers.indexOf(offer) >= 0;
+      const {title: offerTitle, price: offerPrice} = offer;
+      return (
+        `<div class="event__offer-selector">
+          <input class="event__offer-checkbox  visually-hidden" id="event-offer-${offerTitle}" type="checkbox" name="event-offer" value="${offerTitle}" ${isOfferChecked ? `checked` : ``}>
+          <label class="event__offer-label" for="event-offer-${offerTitle}">
+            <span class="event__offer-title">${offerTitle}</span>
+            &plus;
+            &euro;&nbsp;<span class="event__offer-price">${offerPrice}</span>
+          </label>
+        </div>`
+      );
+    })
+    .join(`\n`);
+};
+
+const createEditFormTemplate = (tripEvent, mode) => {
   const {type, destination, offers: chosenOffers, price, isFavorite} = tripEvent;
-  const chosenDestination = destinations.find((it) => it.name === destination);
+  const chosenDestination = destination ? destinations.find((it) => it.name === destination) : Object.assign({}, {name: ``});
   const chosenTypeOfOffers = offersForTypes.find((it) => it.type === type);
   const availableOffers = chosenTypeOfOffers.offers;
-  const isOfferChecked = (currentOffer) => {
-    return chosenOffers.indexOf(currentOffer) >= 0;
-  };
 
-  const offersList = document.createElement(`div`);
+  let destinationSection = ``;
+  if (destination) {
+    const picturesList = document.createElement(`div`);
+    for (let i = 0; i < chosenDestination.pictures.length; i++) {
+      picturesList.insertAdjacentHTML(`beforeend`, `<img class="event__photo" src="${chosenDestination.pictures[i].src}" alt="Event photo"></img>`);
+    }
 
-  for (let i = 0; i < availableOffers.length; i++) {
-    const currentOffer = availableOffers[i];
-    const {title: offerTitle, price: offerPrice} = currentOffer;
-    offersList.insertAdjacentHTML(`beforeend`, `<div class="event__offer-selector">
-      <input class="event__offer-checkbox  visually-hidden" id="event-offer-${offerTitle}" type="checkbox" name="event-offer-${offerTitle}" ${isOfferChecked(currentOffer) ? `checked` : ``}>
-      <label class="event__offer-label" for="event-offer-${offerTitle}">
-        <span class="event__offer-title">${offerTitle}</span>
-        &plus;
-        &euro;&nbsp;<span class="event__offer-price">${offerPrice}</span>
-      </label>
-    </div>`);
+    destinationSection =
+    `<section class="event__section  event__section--destination">
+          <h3 class="event__section-title  event__section-title--destination">Destination</h3>
+          <p class="event__destination-description">${chosenDestination.description}</p>
+
+          <div class="event__photos-container">
+            <div class="event__photos-tape">
+              ${picturesList.innerHTML}
+            </div>
+          </div>
+        </section>`;
   }
 
-  const picturesList = document.createElement(`div`);
-
-  for (let i = 0; i < chosenDestination.pictures.length; i++) {
-    picturesList.insertAdjacentHTML(`beforeend`, `<img class="event__photo" src="${chosenDestination.pictures[i].src}" alt="Event photo"></img>`);
-  }
-
+  const isCreatingPoint = mode === Mode.ADDING;
+  const buttonsTemplate = isCreatingPoint ? `<button class="event__reset-btn" type="reset">Cancel</button>` :
+    `<button class="event__reset-btn" type="reset">Delete</button>
+    <input id="event-favorite-1" class="event__favorite-checkbox visually-hidden" type="checkbox" name="event-favorite" ${isFavorite ? `checked` : ``}>
+    <label class="event__favorite-btn" for="event-favorite-1">
+      <span class="visually-hidden">Add to favorite</span>
+      <svg class="event__favorite-icon" width="28" height="28" viewBox="0 0 28 28">
+        <path d="M14 21l-8.22899 4.3262 1.57159-9.1631L.685209 9.67376 9.8855 8.33688 14 0l4.1145 8.33688 9.2003 1.33688-6.6574 6.48934 1.5716 9.1631L14 21z"/>
+      </svg>
+    </label>
+    <button class="event__rollup-btn" type="button">
+      <span class="visually-hidden">Open event</span>
+    </button>`;
 
   return (
     `<form class="trip-events__item  event  event--edit" action="#" method="post">
@@ -50,60 +109,10 @@ const createEditFormTemplate = (tripEvent) => {
           <div class="event__type-list">
             <fieldset class="event__type-group">
               <legend class="visually-hidden">Transfer</legend>
-
-              <div class="event__type-item">
-                <input id="event-type-taxi-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="taxi">
-                <label class="event__type-label  event__type-label--taxi" for="event-type-taxi-1">Taxi</label>
-              </div>
-
-              <div class="event__type-item">
-                <input id="event-type-bus-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="bus">
-                <label class="event__type-label  event__type-label--bus" for="event-type-bus-1">Bus</label>
-              </div>
-
-              <div class="event__type-item">
-                <input id="event-type-train-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="train">
-                <label class="event__type-label  event__type-label--train" for="event-type-train-1">Train</label>
-              </div>
-
-              <div class="event__type-item">
-                <input id="event-type-ship-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="ship">
-                <label class="event__type-label  event__type-label--ship" for="event-type-ship-1">Ship</label>
-              </div>
-
-              <div class="event__type-item">
-                <input id="event-type-transport-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="transport">
-                <label class="event__type-label  event__type-label--transport" for="event-type-transport-1">Transport</label>
-              </div>
-
-              <div class="event__type-item">
-                <input id="event-type-drive-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="drive">
-                <label class="event__type-label  event__type-label--drive" for="event-type-drive-1">Drive</label>
-              </div>
-
-              <div class="event__type-item">
-                <input id="event-type-flight-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="flight">
-                <label class="event__type-label  event__type-label--flight" for="event-type-flight-1">Flight</label>
-              </div>
-            </fieldset>
-
+              ${createTypeInputMarkup(TRANSPORTS, type)}
             <fieldset class="event__type-group">
               <legend class="visually-hidden">Activity</legend>
-
-              <div class="event__type-item">
-                <input id="event-type-check-in-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="check-in">
-                <label class="event__type-label  event__type-label--check-in" for="event-type-check-in-1">Check-in</label>
-              </div>
-
-              <div class="event__type-item">
-                <input id="event-type-sightseeing-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="sightseeing">
-                <label class="event__type-label  event__type-label--sightseeing" for="event-type-sightseeing-1">Sightseeing</label>
-              </div>
-
-              <div class="event__type-item">
-                <input id="event-type-restaurant-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="restaurant">
-                <label class="event__type-label  event__type-label--restaurant" for="event-type-restaurant-1">Restaurant</label>
-              </div>
+              ${createTypeInputMarkup(ACTIVITIES, type)}
             </fieldset>
           </div>
         </div>
@@ -112,13 +121,9 @@ const createEditFormTemplate = (tripEvent) => {
           <label class="event__label  event__type-output" for="event-destination-1">
           ${type.charAt(0).toUpperCase() + type.slice(1)} ${getPreposition(type)}
           </label>
-          <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${chosenDestination.name}" list="destination-list-1">
-          <datalist id="destination-list-1">
-            <option value="Amsterdam"></option>
-            <option value="Geneva"></option>
-            <option value="Chamonix"></option>
-            <option value="Saint-Petersburg"></option>
-          </datalist>
+          <select class="event__input  event__input--destination" id="event-destination-1" name="event-destination" required>
+          ${createDestinationSelectMarkup(DESTINATIONS, destination)}
+          </select>
         </div>
 
         <div class="event__field-group  event__field-group--time">
@@ -138,68 +143,82 @@ const createEditFormTemplate = (tripEvent) => {
             <span class="visually-hidden">Price</span>
             &euro;
           </label>
-          <input class="event__input  event__input--price" id="event-price-1" type="text" name="event-price" value="${price}">
+          <input class="event__input  event__input--price" id="event-price-1" type="number" name="event-price" value="${price}">
         </div>
 
         <button class="event__save-btn  btn  btn--blue" type="submit">Save</button>
-        <button class="event__reset-btn" type="reset">Delete</button>
-
-        <input id="event-favorite-1" class="event__favorite-checkbox visually-hidden" type="checkbox" name="event-favorite" ${isFavorite ? `checked` : ``}>
-        <label class="event__favorite-btn" for="event-favorite-1">
-          <span class="visually-hidden">Add to favorite</span>
-          <svg class="event__favorite-icon" width="28" height="28" viewBox="0 0 28 28">
-            <path d="M14 21l-8.22899 4.3262 1.57159-9.1631L.685209 9.67376 9.8855 8.33688 14 0l4.1145 8.33688 9.2003 1.33688-6.6574 6.48934 1.5716 9.1631L14 21z"/>
-          </svg>
-        </label>
-
-        <button class="event__rollup-btn" type="button">
-          <span class="visually-hidden">Open event</span>
-        </button>
+        ${buttonsTemplate}
       </header>
       <section class="event__details">
         <section class="event__section  event__section--offers">
           <h3 class="event__section-title  event__section-title--offers">Offers</h3>
 
           <div class="event__available-offers">
-          ${offersList.innerHTML}
+          ${createOffersMarkup(availableOffers, chosenOffers)}
           </div>
         </section>
 
-        <section class="event__section  event__section--destination">
-          <h3 class="event__section-title  event__section-title--destination">Destination</h3>
-          <p class="event__destination-description">${chosenDestination.description}</p>
-
-          <div class="event__photos-container">
-            <div class="event__photos-tape">
-              ${picturesList.innerHTML}
-            </div>
-          </div>
-        </section>
+        ${destinationSection}
       </section>
     </form>`
   );
 };
 
+const parseFormData = (formData) => {
+  const type = formData.get(`event-type`);
+  const chosenTypeOfOffers = offersForTypes.find((it) => it.type === type).offers;
+
+  const checkedOffers = formData.getAll(`event-offer`).map((offer) => {
+    return chosenTypeOfOffers.find((it) => it.title === offer);
+  });
+
+  const start = formData.get(`event-start-time`);
+  const finish = formData.get(`event-end-time`);
+
+  return {
+    type,
+    destination: formData.get(`event-destination`),
+    start: new Date(start),
+    finish: new Date(finish),
+    price: formData.get(`event-price`),
+    isFavorite: Boolean(formData.get(`event-favorite`)),
+    offers: checkedOffers,
+  };
+};
+
 export default class EditForm extends AbstractSmartComponent {
-  constructor(tripEvent) {
+  constructor(tripEvent, mode) {
     super();
     this._event = tripEvent;
+    this._type = tripEvent.type;
+    this._destination = tripEvent.destination;
+    this._start = tripEvent.start;
+    this._finish = tripEvent.finish;
+    this._price = tripEvent.price;
+    this._isFavorite = tripEvent.isFavorite;
+    this._offers = tripEvent.offers;
+
+    this._mode = mode;
     this._flatpickrForStart = null;
     this._flatpickrForEnd = null;
 
-    this._handler = null;
+    this._submitHandler = null;
+    this._resetHandler = null;
+    this._favoriteHandler = null;
+    this._rollUpHandler = null;
     this._subscribeOnEvents();
     this._applyFlatpickr();
   }
 
   getTemplate() {
-    return createEditFormTemplate(this._event);
+    return createEditFormTemplate(this._event, this._mode);
   }
 
   recoveryListeners() {
-    this.setSubmitHandler(this._handler);
-    this.setResetHandler(this._handler);
-    this.setRollUpHandler(this._handler);
+    this.setSubmitHandler(this._submitHandler);
+    this.setResetHandler(this._resetHandler);
+    this.setRollUpHandler(this._rollUpHandler);
+    this.setFavoriteButtonClickHandler(this._favoriteHandler);
 
     this._subscribeOnEvents();
   }
@@ -209,21 +228,47 @@ export default class EditForm extends AbstractSmartComponent {
     this._applyFlatpickr();
   }
 
+  reset() {
+    this._type = this._event.type;
+    this._destination = this._event.destination;
+    this._start = this._event.start;
+    this._finish = this._event.finish;
+    this._price = this._event.price;
+    this._isFavorite = this._event.isFavorite;
+    this._offers = this._event.offers;
+
+    this.rerender();
+  }
+
+  getData() {
+    const form = this.getElement();
+    const formData = new FormData(form);
+
+    return parseFormData(formData);
+  }
+
   setSubmitHandler(cb) {
     this.getElement().addEventListener(`submit`, cb);
-    this._handler = cb;
+    this._submitHandler = cb;
   }
 
   setResetHandler(cb) {
     this.getElement().querySelector(`.event__reset-btn`).addEventListener(`click`, cb);
+    this._resetHandler = cb;
   }
 
   setRollUpHandler(cb) {
-    this.getElement().querySelector(`.event__rollup-btn`).addEventListener(`click`, cb);
+    if (this._mode === Mode.DEFAULT) {
+      this.getElement().querySelector(`.event__rollup-btn`).addEventListener(`click`, cb);
+      this._rollUpHandler = cb;
+    }
   }
 
   setFavoriteButtonClickHandler(cb) {
-    this.getElement().querySelector(`.event__favorite-checkbox`).addEventListener(`change`, cb);
+    if (this._mode === Mode.DEFAULT) {
+      this.getElement().querySelector(`.event__favorite-checkbox`).addEventListener(`change`, cb);
+      this._favoriteHandler = cb;
+    }
   }
 
   _applyFlatpickr() {
@@ -238,21 +283,18 @@ export default class EditForm extends AbstractSmartComponent {
     destroyFlatpickr(this._flatpickrForEnd);
 
     const startDateElement = this.getElement().querySelector(`#event-start-time-1`);
-    this._flatpickrForStart = flatpickr(startDateElement, {
-      enableTime: true,
-      time_24hr: true,
-      dateFormat: `d/m/Y H:i`,
-      defaultDate: this._event.start || `today`,
-    });
-
     const endDateElement = this.getElement().querySelector(`#event-end-time-1`);
-    this._flatpickrForEnd = flatpickr(endDateElement, {
-      enableTime: true,
-      time_24hr: true,
-      dateFormat: `d/m/Y H:i`,
-      minDate: this._event.start,
-      defaultDate: this._event.finish || `today`,
-    });
+    const submitButton = this.getElement().querySelector(`.event__save-btn`);
+
+    const onChange = () => {
+      submitButton.disabled = false;
+      if (startDateElement.value > endDateElement.value) {
+        submitButton.disabled = true;
+      }
+    };
+
+    this._flatpickrForStart = flatpickr(startDateElement, createStartFlatpickr(this._event, onChange));
+    this._flatpickrForEnd = flatpickr(endDateElement, createFinishFlatpickr(this._event, onChange));
   }
 
   _subscribeOnEvents() {
@@ -262,7 +304,6 @@ export default class EditForm extends AbstractSmartComponent {
     .forEach((it) => it
       .addEventListener(`change`, (evt) => {
         this._event.type = evt.target.value;
-
         this.rerender();
       }));
 

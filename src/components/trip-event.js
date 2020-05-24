@@ -8,10 +8,11 @@ const createTripEventTemplate = (tripEvent) => {
   let duration = formatDays(finish - start);
 
   const offersList = document.createElement(`ul`);
+  const numberOfOffers = offers.length > 3 ? 3 : offers.length;
 
-  for (let i = 0; i < offers.length; i++) {
+  for (let i = 0; i < numberOfOffers; i++) {
     const currentOffer = offers[i];
-    const {offerTitle, offerPrice} = currentOffer;
+    const {title: offerTitle, price: offerPrice} = currentOffer;
     offersList.insertAdjacentHTML(`beforeend`, `<li class="event__offer">
                                     <span class="event__offer-title">${offerTitle}</span>
                                     &plus;

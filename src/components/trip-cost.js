@@ -8,7 +8,7 @@ const createTripCostTemplate = (tripEvents) => {
     total += price;
 
     offers.map((offer) => {
-      const {offerPrice} = offer;
+      const {price: offerPrice} = offer;
       total += offerPrice;
     });
   });
