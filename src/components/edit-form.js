@@ -166,28 +166,6 @@ const createEditFormTemplate = (tripEvent, mode) => {
   );
 };
 
-const parseFormData = (formData) => {
-  const type = formData.get(`event-type`);
-  const chosenTypeOfOffers = offersForTypes.find((it) => it.type === type).offers;
-
-  const checkedOffers = formData.getAll(`event-offer`).map((offer) => {
-    return chosenTypeOfOffers.find((it) => it.title === offer);
-  });
-
-  let start = formData.get(`event-start-time`);
-  let finish = formData.get(`event-end-time`);
-
-  return {
-    type,
-    destination: formData.get(`event-destination`),
-    start: new Date(start),
-    finish: new Date(finish),
-    price: formData.get(`event-price`),
-    isFavorite: Boolean(formData.get(`event-favorite`)),
-    offers: checkedOffers,
-  };
-};
-
 export default class EditForm extends AbstractSmartComponent {
   constructor(tripEvent, mode) {
     super();
@@ -247,11 +225,33 @@ export default class EditForm extends AbstractSmartComponent {
     this.rerender();
   }
 
+  _parseFormData(formData) {
+    const type = formData.get(`event-type`);
+    const chosenTypeOfOffers = offersForTypes.find((it) => it.type === type).offers;
+
+    const checkedOffers = formData.getAll(`event-offer`).map((offer) => {
+      return chosenTypeOfOffers.find((it) => it.title === offer);
+    });
+
+    let start = this._flatpickrForStart.selectedDates[0];
+    let finish = this._flatpickrForEnd.selectedDates[0];
+
+    return {
+      type,
+      destination: formData.get(`event-destination`),
+      start,
+      finish,
+      price: formData.get(`event-price`),
+      isFavorite: Boolean(formData.get(`event-favorite`)),
+      offers: checkedOffers,
+    };
+  }
+
   getData() {
     const form = this.getElement();
     const formData = new FormData(form);
 
-    return parseFormData(formData);
+    return this._parseFormData(formData);
   }
 
   setSubmitHandler(cb) {
@@ -294,8 +294,10 @@ export default class EditForm extends AbstractSmartComponent {
     const submitButton = this.getElement().querySelector(`.event__save-btn`);
 
     const onChange = () => {
+      let start = this._flatpickrForStart.selectedDates[0];
+      let finish = this._flatpickrForEnd.selectedDates[0];
       submitButton.disabled = false;
-      if (startDateElement.value > endDateElement.value) {
+      if (start > finish) {
         submitButton.disabled = true;
       }
     };
