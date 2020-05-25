@@ -24,6 +24,7 @@ export default class PointController {
     this._onDataChange = onDataChange;
     this._onViewChange = onViewChange;
     this._mode = Mode.DEFAULT;
+    this._event = null;
 
     this._tripEventComponent = null;
     this._editFormComponent = null;
@@ -34,6 +35,7 @@ export default class PointController {
     const oldTripEventComponent = this._tripEventComponent;
     const oldEditFormComponent = this._editFormComponent;
     this._mode = mode;
+    this._event = tripEvent;
 
     this._tripEventComponent = new TripEvent(tripEvent);
     this._editFormComponent = new EditForm(tripEvent, this._mode);
@@ -60,12 +62,13 @@ export default class PointController {
 
     this._editFormComponent.setRollUpHandler(() => {
       this._replaceEditToEvent();
+      this._editFormComponent.reset();
     });
 
     this._editFormComponent.setFavoriteButtonClickHandler(() => {
-      this._onDataChange(this, tripEvent, Object.assign({}, tripEvent, {
+      this._event = Object.assign({}, this._event, {
         isFavorite: !tripEvent.isFavorite,
-      }));
+      });
     });
 
     switch (mode) {
@@ -107,8 +110,6 @@ export default class PointController {
   }
 
   _replaceEditToEvent() {
-    this._editFormComponent.reset();
-
     replace(this._tripEventComponent, this._editFormComponent);
     document.removeEventListener(`keydown`, this._onEscKeyDown);
 
@@ -118,7 +119,12 @@ export default class PointController {
   _onEscKeyDown(evt) {
     const isEscKey = evt.key === `Escape` || evt.key === `Esc`;
     if (isEscKey) {
-      this._replaceEditToEvent();
+      if (this._mode === Mode.ADDING) {
+        this._onDataChange(this, EmptyPoint, null);
+      } else {
+        this._replaceEditToEvent();
+        this._editFormComponent.reset();
+      }
       document.removeEventListener(`keydown`, this._onEscKeyDown);
     }
   }

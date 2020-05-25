@@ -10,7 +10,8 @@ const addPointButton = document.querySelector(`.trip-main__event-add-btn`);
 let pointControllers = [];
 
 const renderDays = (tripListElement, tripEvents, onDataChange, onViewChange) => {
-  let allDates = Array.from(tripEvents, ({start}) => start.toDateString());
+  const sortedEvents = tripEvents.slice().sort((a, b) => a.start - b.start);
+  let allDates = Array.from(sortedEvents, ({start}) => start.toDateString());
   let days = [...new Set(allDates)];
 
   let count = 1;
@@ -19,7 +20,7 @@ const renderDays = (tripListElement, tripEvents, onDataChange, onViewChange) => 
     day = new Date(day);
     render(tripListElement, new TripDay(day, count++), RenderPosition.BEFOREEND);
     let events = tripListElement.querySelectorAll(`.trip-events__list`);
-    let dateEvents = tripEvents.slice().filter((tripEvent) => tripEvent.start.toDateString() === day.toDateString());
+    let dateEvents = sortedEvents.slice().filter((tripEvent) => tripEvent.start.toDateString() === day.toDateString());
     dateEvents.map((dateEvent) => {
       const pointController = new PointController(events[count - 2], onDataChange, onViewChange);
       pointController.render(dateEvent, PointControllerMode.DEFAULT);
@@ -55,6 +56,7 @@ export default class TripController {
     this._pointControllers = pointControllers;
     this._tripEvents = [];
     this._creatingPoint = null;
+    this._sortType = SortType.EVENT;
 
     this._sort = new Sort();
     this._tripList = new TripList();
@@ -106,6 +108,26 @@ export default class TripController {
     addPointButton.removeEventListener(`click`, this.onAddButtonClick);
   }
 
+  _renderPoints(sortType) {
+    this._pointControllers = [];
+    const sortedEvents = getSortedEvents(this._tripEvents, sortType);
+    this._tripList.getElement().innerHTML = ``;
+
+    if (sortType === SortType.EVENT) {
+      renderDays(this._tripList.getElement(), this._tripEvents, this._onDataChange, this._onViewChange);
+    } else {
+      render(this._tripList.getElement(), new TripDay(new Date(), ``), RenderPosition.BEFOREEND);
+      const dayInfo = this._tripList.getElement().querySelector(`.day__info`);
+      dayInfo.innerHTML = ``;
+      const eventsList = this._tripList.getElement().querySelector(`.trip-events__list`);
+      sortedEvents.map((tripEvent) => {
+        const pointController = new PointController(eventsList, this._onDataChange, this._onViewChange);
+        pointController.render(tripEvent, PointControllerMode.DEFAULT);
+        this._pointControllers.push(pointController);
+      });
+    }
+  }
+
   _updateAddButton() {
     addPointButton.removeAttribute(`disabled`, `disabled`);
     addPointButton.addEventListener(`click`, this.onAddButtonClick);
@@ -119,7 +141,7 @@ export default class TripController {
   _updatePoints() {
     this._removeDays();
     this._tripEvents = this._pointsModel.getPoints();
-    renderDays(this._tripList.getElement(), this._tripEvents, this._onDataChange, this._onViewChange);
+    this._renderPoints(this._sortType);
   }
 
   _onFilterChange() {
@@ -145,6 +167,8 @@ export default class TripController {
     } else {
       this._pointsModel.updatePoint(oldData.id, newData);
       this._updatePoints();
+      this._creatingPoint = null;
+      this._updateAddButton();
     }
   }
 
@@ -153,22 +177,7 @@ export default class TripController {
   }
 
   _onSortTypeChange(sortType) {
-    this._pointControllers = [];
-    const sortedEvents = getSortedEvents(this._tripEvents, sortType);
-    this._tripList.getElement().innerHTML = ``;
-
-    if (sortType === SortType.EVENT) {
-      renderDays(this._tripList.getElement(), this._tripEvents, this._onDataChange, this._onViewChange);
-    } else {
-      render(this._tripList.getElement(), new TripDay(new Date(), ``), RenderPosition.BEFOREEND);
-      const dayInfo = this._tripList.getElement().querySelector(`.day__info`);
-      dayInfo.innerHTML = ``;
-      const eventsList = this._tripList.getElement().querySelector(`.trip-events__list`);
-      sortedEvents.map((tripEvent) => {
-        const pointController = new PointController(eventsList, this._onDataChange, this._onViewChange);
-        pointController.render(tripEvent, PointControllerMode.DEFAULT);
-        this._pointControllers.push(pointController);
-      });
-    }
+    this._sortType = sortType;
+    this._renderPoints(this._sortType);
   }
 }

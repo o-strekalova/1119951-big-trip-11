@@ -38,6 +38,6 @@ const generateTripEvent = () => {
   };
 };
 
-const tripEvents = generateNewArray(EVENTS_COUNT, generateTripEvent).sort((a, b) => a.start - b.start);
+const tripEvents = generateNewArray(EVENTS_COUNT, generateTripEvent);
 
 export {tripEvents};
