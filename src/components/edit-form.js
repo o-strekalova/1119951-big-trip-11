@@ -239,7 +239,7 @@ export default class EditForm extends AbstractSmartComponent {
       destination: formData.get(`event-destination`),
       start,
       finish,
-      price: formData.get(`event-price`),
+      price: Number(formData.get(`event-price`)),
       isFavorite: Boolean(formData.get(`event-favorite`)),
       offers: checkedOffers,
     };

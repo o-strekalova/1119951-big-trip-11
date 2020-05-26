@@ -34,7 +34,6 @@ filterController.render();
 
 const tripController = new TripController(tripListComponent, pointsModel);
 tripController.render();
-// tripController.hide();
 
 addPointButton.addEventListener(`click`, tripController.onAddButtonClick);
 

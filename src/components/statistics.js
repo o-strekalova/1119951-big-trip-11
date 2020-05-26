@@ -6,6 +6,19 @@ import {TRANSPORTS, formatDays} from "./../utils/common.js";
 // Рассчитаем высоту канваса в зависимости от того, сколько данных в него будет передаваться
 const BAR_HEIGHT = 55;
 
+const typeToEmoji = {
+  "taxi": `\uD83D\uDE95`,
+  "bus": `\uD83D\uDE8C`,
+  "train": `\uD83D\uDE82`,
+  "ship": `\uD83D\uDEF3`,
+  "transport": `\uD83D\uDE8A`,
+  "drive": `\uD83D\uDE97`,
+  "flight": `\u2708\uFE0F`,
+  "check-in": `\uD83C\uDFE8`,
+  "sightseeing": `\uD83C\uDFDB`,
+  "restaurant": `\uD83C\uDF74`,
+};
+
 const getUniqItems = (item, index, array) => {
   return array.indexOf(item) === index;
 };
@@ -14,6 +27,12 @@ const getActiveTypes = (tripEvents) => {
   return tripEvents
     .map((tripEvent) => tripEvent.type)
     .filter(getUniqItems);
+};
+
+const addEmoji = (eventTypes) => {
+  return eventTypes.slice().map((string) => {
+    return `${typeToEmoji[string]} ${string.toUpperCase()}`;
+  });
 };
 
 const calcUniqCountForTransport = (tripEvents, transportType) => {
@@ -34,17 +53,55 @@ const getTotalTimeForType = (tripEvents, eventType) => {
   .reduce((a, b) => a + b);
 };
 
+const sortMoneyBars = (eventTypes, tripEvents) => {
+  return eventTypes
+  .map((eventType) => {
+    return {
+      type: eventType,
+      total: getTotalPriceForType(tripEvents, eventType),
+    };
+  })
+  .sort((a, b) => b.total - a.total);
+};
+
+const sortTransportBars = (transportTypes, tripEvents) => {
+  return transportTypes
+  .map((transportType) => {
+    return {
+      type: transportType,
+      count: calcUniqCountForTransport(tripEvents, transportType),
+    };
+  })
+  .sort((a, b) => b.count - a.count);
+};
+
+const sortTimeBars = (eventTypes, tripEvents) => {
+  return eventTypes
+  .map((eventType) => {
+    return {
+      type: eventType,
+      time: getTotalTimeForType(tripEvents, eventType),
+    };
+  })
+  .sort((a, b) => b.time - a.time);
+};
+
 const renderMoneyChart = (moneyCtx, tripEvents) => {
   const eventTypes = getActiveTypes(tripEvents);
   moneyCtx.height = BAR_HEIGHT * eventTypes.length;
+
+  const sortedData = sortMoneyBars(eventTypes, tripEvents);
+
+  const labels = sortedData.map((data) => data.type);
+  const emojiLables = addEmoji(labels);
 
   return new Chart(moneyCtx, {
     plugins: [ChartDataLabels],
     type: `horizontalBar`,
     data: {
-      labels: eventTypes.map((string) => string.toUpperCase()),
+      labels: emojiLables,
       datasets: [{
-        data: eventTypes.map((eventType) => getTotalPriceForType(tripEvents, eventType)),
+        data: sortedData.map((data) => data.total),
         backgroundColor: `#ffffff`,
         hoverBackgroundColor: `#ffffff`,
         anchor: `start`
@@ -108,16 +165,21 @@ const renderTransportChart = (transportCtx, tripEvents) => {
   const transportEvents = tripEvents
     .filter((it) => TRANSPORTS.indexOf(it.type) !== -1);
 
-  const eventTypes = getActiveTypes(transportEvents);
-  transportCtx.height = BAR_HEIGHT * eventTypes.length;
+  const transportTypes = getActiveTypes(transportEvents);
+  transportCtx.height = BAR_HEIGHT * transportTypes.length;
+
+  const sortedData = sortTransportBars(transportTypes, tripEvents);
+
+  const labels = sortedData.map((data) => data.type);
+  const emojiLables = addEmoji(labels);
 
   return new Chart(transportCtx, {
     plugins: [ChartDataLabels],
     type: `horizontalBar`,
     data: {
-      labels: eventTypes.map((string) => string.toUpperCase()),
+      labels: emojiLables,
       datasets: [{
-        data: eventTypes.map((transportType) => calcUniqCountForTransport(tripEvents, transportType)),
+        data: sortedData.map((data) => data.count),
         backgroundColor: `#ffffff`,
         hoverBackgroundColor: `#ffffff`,
         anchor: `start`
@@ -181,13 +243,18 @@ const renderTimeSpendChart = (timeSpendCtx, tripEvents) => {
   const eventTypes = getActiveTypes(tripEvents);
   timeSpendCtx.height = BAR_HEIGHT * eventTypes.length;
 
+  const sortedData = sortTimeBars(eventTypes, tripEvents);
+
+  const labels = sortedData.map((data) => data.type);
+  const emojiLables = addEmoji(labels);
+
   return new Chart(timeSpendCtx, {
     plugins: [ChartDataLabels],
     type: `horizontalBar`,
     data: {
-      labels: eventTypes.map((string) => string.toUpperCase()),
+      labels: emojiLables,
       datasets: [{
-        data: eventTypes.map((eventType) => getTotalTimeForType(tripEvents, eventType)),
+        data: sortedData.map((data) => data.time),
         backgroundColor: `#ffffff`,
         hoverBackgroundColor: `#ffffff`,
         anchor: `start`
