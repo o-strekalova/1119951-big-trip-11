@@ -32,8 +32,6 @@ export default class Filter extends AbstractComponent {
   setFilterChangeHandler(handler) {
     this.getElement().addEventListener(`change`, (evt) => {
       const filterName = evt.target.value;
-      /* .toString().toUpperCase();
-      const filterType = FilterType[filterName]; */
       handler(filterName);
     });
   }

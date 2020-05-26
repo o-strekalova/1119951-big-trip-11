@@ -1,4 +1,4 @@
-import {getPreposition} from "./../utils/common.js";
+import {getPreposition, TRANSPORTS, ACTIVITIES} from "./../utils/common.js";
 import AbstractSmartComponent from "./abstract-smart-component.js";
 import {offersForTypes} from "./../mock/offers-for-types.js";
 import {destinations} from "./../mock/destinations.js";
@@ -8,8 +8,6 @@ import flatpickr from "flatpickr";
 
 import "flatpickr/dist/flatpickr.min.css";
 
-const TRANSPORTS = [`taxi`, `bus`, `train`, `ship`, `transport`, `drive`, `flight`];
-const ACTIVITIES = [`check-in`, `sightseeing`, `restaurant`];
 const DESTINATIONS = [`Amsterdam`, `Geneva`, `Chamonix`, `Saint-Petersburg`];
 let currentID = 0;
 

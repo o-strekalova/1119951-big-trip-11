@@ -67,7 +67,7 @@ export default class PointsModel {
   }
 
   resetFilter() {
-    this.setFilter(FilterType.EVERYTHING);
+    this._activeFilterType = FilterType.EVERYTHING;
     this._callHandlers(this._resetHandlers);
   }
 }

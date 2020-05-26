@@ -1,6 +1,7 @@
 import moment from "moment";
 
-const TRANSPORT = [`taxi`, `bus`, `train`, `ship`, `transport`, `drive`, `flight`];
+export const TRANSPORTS = [`taxi`, `bus`, `train`, `ship`, `transport`, `drive`, `flight`];
+export const ACTIVITIES = [`check-in`, `sightseeing`, `restaurant`];
 
 export const formatTime = (date) => {
   return moment(date).format(`HH:mm`);
@@ -25,7 +26,7 @@ export const formatDays = (date) => {
 
 export const getPreposition = (type) => {
   let preposition = `in`;
-  if (TRANSPORT.indexOf(type) > 0) {
+  if (TRANSPORTS.indexOf(type) > 0) {
     preposition = `to`;
   }
   return preposition;
