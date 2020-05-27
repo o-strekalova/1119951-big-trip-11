@@ -154,8 +154,8 @@ export default class TripController {
 
   _onFilterChange() {
     this._updatePoints();
-    this._onSortTypeChange(SortType.EVENT);
     this._sort.resetSortType();
+    this._onSortTypeChange(SortType.EVENT);
   }
 
   _onDataChange(pointController, oldData, newData) {

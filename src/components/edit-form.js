@@ -9,16 +9,16 @@ import flatpickr from "flatpickr";
 import "flatpickr/dist/flatpickr.min.css";
 
 const DESTINATIONS = [`Amsterdam`, `Geneva`, `Chamonix`, `Saint-Petersburg`];
-let currentID = 0;
+const idList = [];
 
-const createTypeInputMarkup = (eventTypes, checkedType) => {
+const createTypeInputMarkup = (eventTypes, checkedType, id) => {
   return eventTypes
     .map((eventType) => {
       const isChecked = eventType === checkedType;
       return (
         `<div class="event__type-item">
-          <input id="event-type-${eventType}-${currentID}" class="event__type-input  visually-hidden" type="radio" name="event-type" value="${eventType}" ${isChecked ? `checked` : ``}>
-          <label class="event__type-label  event__type-label--${eventType}" for="event-type-${eventType}-${currentID}">${eventType.charAt(0).toUpperCase() + eventType.slice(1)}</label>
+          <input id="event-type-${eventType}-${id}" class="event__type-input  visually-hidden" type="radio" name="event-type" value="${eventType}" ${isChecked ? `checked` : ``}>
+          <label class="event__type-label  event__type-label--${eventType}" for="event-type-${eventType}-${id}">${eventType.charAt(0).toUpperCase() + eventType.slice(1)}</label>
         </div>`
       );
     })
@@ -36,15 +36,15 @@ const createDestinationSelectMarkup = (allDestinations, selectedDestination) => 
     .join(`\n`);
 };
 
-const createOffersMarkup = (availableOffers, chosenOffers) => {
+const createOffersMarkup = (availableOffers, chosenOffers, id) => {
   return availableOffers
     .map((offer) => {
       const isOfferChecked = chosenOffers.indexOf(offer) >= 0;
       const {title: offerTitle, price: offerPrice} = offer;
       return (
         `<div class="event__offer-selector">
-          <input class="event__offer-checkbox  visually-hidden" id="event-offer-${offerTitle}-${currentID}" type="checkbox" name="event-offer" value="${offerTitle}" ${isOfferChecked ? `checked` : ``}>
-          <label class="event__offer-label" for="event-offer-${offerTitle}-${currentID}">
+          <input class="event__offer-checkbox  visually-hidden" id="event-offer-${offerTitle}-${id}" type="checkbox" name="event-offer" value="${offerTitle}" ${isOfferChecked ? `checked` : ``}>
+          <label class="event__offer-label" for="event-offer-${offerTitle}-${id}">
             <span class="event__offer-title">${offerTitle}</span>
             &plus;
             &euro;&nbsp;<span class="event__offer-price">${offerPrice}</span>
@@ -56,11 +56,18 @@ const createOffersMarkup = (availableOffers, chosenOffers) => {
 };
 
 const createEditFormTemplate = (tripEvent, mode) => {
-  currentID++;
-  const {type, destination, offers: chosenOffers, price, isFavorite} = tripEvent;
+  let {id, type, destination, offers: chosenOffers, price, isFavorite} = tripEvent;
   const chosenDestination = destination ? destinations.find((it) => it.name === destination) : Object.assign({}, {name: ``});
   const chosenTypeOfOffers = offersForTypes.find((it) => it.type === type);
   const availableOffers = chosenTypeOfOffers.offers;
+
+  if (id === undefined) {
+    id = Math.max.apply(null, idList) + 1;
+  }
+
+  if (idList.indexOf(id) === -1) {
+    idList.push(id);
+  }
 
   let destinationSection = ``;
   if (destination) {
@@ -85,8 +92,8 @@ const createEditFormTemplate = (tripEvent, mode) => {
   const isCreatingPoint = mode === Mode.ADDING;
   const buttonsTemplate = isCreatingPoint ? `<button class="event__reset-btn" type="reset">Cancel</button>` :
     `<button class="event__reset-btn" type="reset">Delete</button>
-    <input id="event-favorite-${currentID}" class="event__favorite-checkbox visually-hidden" type="checkbox" name="event-favorite" ${isFavorite ? `checked` : ``}>
-    <label class="event__favorite-btn" for="event-favorite-${currentID}">
+    <input id="event-favorite-${id}" class="event__favorite-checkbox visually-hidden" type="checkbox" name="event-favorite" ${isFavorite ? `checked` : ``}>
+    <label class="event__favorite-btn" for="event-favorite-${id}">
       <span class="visually-hidden">Add to favorite</span>
       <svg class="event__favorite-icon" width="28" height="28" viewBox="0 0 28 28">
         <path d="M14 21l-8.22899 4.3262 1.57159-9.1631L.685209 9.67376 9.8855 8.33688 14 0l4.1145 8.33688 9.2003 1.33688-6.6574 6.48934 1.5716 9.1631L14 21z"/>
@@ -100,50 +107,50 @@ const createEditFormTemplate = (tripEvent, mode) => {
     `<form class="trip-events__item  event  event--edit" action="#" method="post">
       <header class="event__header">
         <div class="event__type-wrapper">
-          <label class="event__type  event__type-btn" for="event-type-toggle-${currentID}">
+          <label class="event__type  event__type-btn" for="event-type-toggle-${id}">
             <span class="visually-hidden">Choose event type</span>
             <img class="event__type-icon" width="17" height="17" src="img/icons/${type}.png" alt="Event type icon">
           </label>
-          <input class="event__type-toggle  visually-hidden" id="event-type-toggle-${currentID}" type="checkbox">
+          <input class="event__type-toggle  visually-hidden" id="event-type-toggle-${id}" type="checkbox">
 
           <div class="event__type-list">
             <fieldset class="event__type-group">
               <legend class="visually-hidden">Transfer</legend>
-              ${createTypeInputMarkup(TRANSPORTS, type)}
+              ${createTypeInputMarkup(TRANSPORTS, type, id)}
             <fieldset class="event__type-group">
               <legend class="visually-hidden">Activity</legend>
-              ${createTypeInputMarkup(ACTIVITIES, type)}
+              ${createTypeInputMarkup(ACTIVITIES, type, id)}
             </fieldset>
           </div>
         </div>
 
         <div class="event__field-group  event__field-group--destination">
-          <label class="event__label  event__type-output" for="event-destination-${currentID}">
+          <label class="event__label  event__type-output" for="event-destination-${id}">
           ${type.charAt(0).toUpperCase() + type.slice(1)} ${getPreposition(type)}
           </label>
-          <select class="event__input  event__input--destination" id="event-destination-${currentID}" name="event-destination" required>
+          <select class="event__input  event__input--destination" id="event-destination-${id}" name="event-destination" required>
           ${createDestinationSelectMarkup(DESTINATIONS, destination)}
           </select>
         </div>
 
         <div class="event__field-group  event__field-group--time">
-          <label class="visually-hidden" for="event-start-time-${currentID}">
+          <label class="visually-hidden" for="event-start-time-${id}">
             From
           </label>
-          <input class="event__input  event__input--time" id="event-start-time-${currentID}" type="text" name="event-start-time">
+          <input class="event__input  event__input--time" id="event-start-time-${id}" type="text" name="event-start-time">
           &mdash;
-          <label class="visually-hidden" for="event-end-time-${currentID}">
+          <label class="visually-hidden" for="event-end-time-${id}">
             To
           </label>
-          <input class="event__input  event__input--time" id="event-end-time-${currentID}" type="text" name="event-end-time">
+          <input class="event__input  event__input--time" id="event-end-time-${id}" type="text" name="event-end-time">
         </div>
 
         <div class="event__field-group  event__field-group--price">
-          <label class="event__label" for="event-price-${currentID}">
+          <label class="event__label" for="event-price-${id}">
             <span class="visually-hidden">Price</span>
             &euro;
           </label>
-          <input class="event__input  event__input--price" id="event-price-${currentID}" type="number" name="event-price" value="${price}" required>
+          <input class="event__input  event__input--price" id="event-price-${id}" type="number" name="event-price" value="${price}" required>
         </div>
 
         <button class="event__save-btn  btn  btn--blue" type="submit">Save</button>
@@ -154,7 +161,7 @@ const createEditFormTemplate = (tripEvent, mode) => {
           <h3 class="event__section-title  event__section-title--offers">Offers</h3>
 
           <div class="event__available-offers">
-          ${createOffersMarkup(availableOffers, chosenOffers)}
+          ${createOffersMarkup(availableOffers, chosenOffers, id)}
           </div>
         </section>
 
@@ -169,6 +176,7 @@ export default class EditForm extends AbstractSmartComponent {
     super();
     this._event = tripEvent;
     this._type = tripEvent.type;
+    this._id = tripEvent.id;
     this._destination = tripEvent.destination;
     this._start = tripEvent.start;
     this._finish = tripEvent.finish;
@@ -235,6 +243,7 @@ export default class EditForm extends AbstractSmartComponent {
     let finish = this._flatpickrForEnd.selectedDates[0];
 
     return {
+      id: this._id,
       type,
       destination: formData.get(`event-destination`),
       start,
@@ -287,8 +296,12 @@ export default class EditForm extends AbstractSmartComponent {
     destroyFlatpickr(this._flatpickrForStart);
     destroyFlatpickr(this._flatpickrForEnd);
 
-    const startDateElement = this.getElement().querySelector(`#event-start-time-${currentID}`);
-    const endDateElement = this.getElement().querySelector(`#event-end-time-${currentID}`);
+    if (this._id === undefined) {
+      this._id = Math.max.apply(null, idList);
+    }
+
+    const startDateElement = this.getElement().querySelector(`#event-start-time-${this._id}`);
+    const endDateElement = this.getElement().querySelector(`#event-end-time-${this._id}`);
     const submitButton = this.getElement().querySelector(`.event__save-btn`);
 
     const onChange = () => {
@@ -299,7 +312,6 @@ export default class EditForm extends AbstractSmartComponent {
         submitButton.disabled = true;
       }
     };
-
     this._flatpickrForStart = flatpickr(startDateElement, createStartFlatpickr(this._event, onChange));
     this._flatpickrForEnd = flatpickr(endDateElement, createFinishFlatpickr(this._event, onChange));
   }
@@ -311,14 +323,52 @@ export default class EditForm extends AbstractSmartComponent {
     .forEach((it) => it
       .addEventListener(`change`, (evt) => {
         this._event.type = evt.target.value;
+        this._event.offers = [];
         this.rerender();
       }));
 
     element.querySelector(`.event__input--destination`)
       .addEventListener(`change`, (evt) => {
         this._event.destination = evt.target.value;
-
         this.rerender();
       });
+
+    element.querySelectorAll(`input[name=event-start-time]`)
+    .forEach((it) => it
+      .addEventListener(`change`, (evt) => {
+        this._event.start = evt.target.value;
+      }));
+
+    element.querySelectorAll(`input[name=event-end-time]`)
+    .forEach((it) => it
+      .addEventListener(`change`, (evt) => {
+        this._event.finish = evt.target.value;
+      }));
+
+    element.querySelectorAll(`.event__input--price`)
+    .forEach((it) => it
+      .addEventListener(`change`, (evt) => {
+        this._event.price = evt.target.value;
+      }));
+
+    element.querySelectorAll(`.event__favorite-checkbox`)
+    .forEach((it) => it
+      .addEventListener(`change`, (evt) => {
+        this._event.isFavorite = evt.target.checked;
+      }));
+
+    element.querySelectorAll(`.event__offer-checkbox`)
+    .forEach((it) => it
+      .addEventListener(`change`, (evt) => {
+        const chosenTypeOfOffers = offersForTypes.find((offersType) => offersType.type === this._event.type).offers;
+        let newOffer = chosenTypeOfOffers.find((offer) => offer.title === evt.target.value);
+
+        if (it.checked) {
+          this._event.offers.push(newOffer);
+        } else {
+          let index = this._event.offers.indexOf(newOffer);
+          this._event.offers.splice(index);
+        }
+      }));
   }
 }
