@@ -1,13 +1,14 @@
 import moment from "moment";
 
-const TRANSPORT = [`taxi`, `bus`, `train`, `ship`, `transport`, `drive`, `flight`];
+export const TRANSPORTS = [`taxi`, `bus`, `train`, `ship`, `transport`, `drive`, `flight`];
+export const ACTIVITIES = [`check-in`, `sightseeing`, `restaurant`];
 
 export const formatTime = (date) => {
-  return moment(date).format(`hh:mm`);
+  return moment(date).format(`HH:mm`);
 };
 
 export const formatDate = (date) => {
-  return moment(date).format(`YYYY-MM-DD[T]hh:mm`);
+  return moment(date).format(`YYYY-MM-DD[T]HH:mm`);
 };
 
 export const formatMonth = (date) => {
@@ -15,16 +16,17 @@ export const formatMonth = (date) => {
 };
 
 export const formatDays = (date) => {
-  if (date > 86400000) {
-    return moment(date).format(`DD[D] hh[H] mm[M]`);
+  if (date >= 86400000) {
+    const diff = moment.utc(date).subtract(86400000);
+    return diff.format(`DD[D] HH[H] mm[M]`);
   } else {
-    return moment(date).format(`hh[H] mm[M]`);
+    return moment.utc(date).format(`HH[H] mm[M]`);
   }
 };
 
 export const getPreposition = (type) => {
   let preposition = `in`;
-  if (TRANSPORT.indexOf(type) > 0) {
+  if (TRANSPORTS.indexOf(type) > 0) {
     preposition = `to`;
   }
   return preposition;

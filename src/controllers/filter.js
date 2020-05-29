@@ -1,50 +1,34 @@
 import FilterComponent from "../components/filter.js";
-/* import {FilterType} from "../const.js"; */
-import {render, replace, RenderPosition} from "../utils/render.js";
-/* import {getTasksByFilter} from "../utils/filter.js"; */
+import {FilterType} from "../utils/filter.js";
+import {render, RenderPosition} from "../utils/render.js";
 
 export default class FilterController {
   constructor(container, pointsModel) {
     this._container = container;
     this._pointsModel = pointsModel;
 
-    this._activeFilterType = FilterType.ALL;
+    this._activeFilterType = FilterType.EVERYTHING;
     this._filterComponent = null;
 
-    this._onDataChange = this._onDataChange.bind(this);
     this._onFilterChange = this._onFilterChange.bind(this);
+    this._onReset = this._onReset.bind(this);
 
-    this._pountsModel.setDataChangeHandler(this._onDataChange);
+    this._pointsModel.setResetHandlers(this._onReset);
   }
 
   render() {
-    /* const container = this._container;
-    const allTasks = this._tasksModel.getTasksAll();
-    const filters = Object.values(FilterType).map((filterType) => {
-      return {
-        name: filterType,
-        count: getTasksByFilter(allTasks, filterType).length,
-        checked: filterType === this._activeFilterType,
-      };
-    });
-    const oldComponent = this._filterComponent;
-
-    this._filterComponent = new FilterComponent(filters);
+    const container = this._container;
+    this._filterComponent = new FilterComponent();
     this._filterComponent.setFilterChangeHandler(this._onFilterChange);
-
-    if (oldComponent) {
-      replace(this._filterComponent, oldComponent);
-    } else {
-      render(container, this._filterComponent, RenderPosition.BEFOREEND);
-    } */
+    render(container, this._filterComponent, RenderPosition.BEFOREEND);
   }
 
-  /* _onFilterChange(filterType) {
-    this._tasksModel.setFilter(filterType);
+  _onFilterChange(filterType) {
+    this._pointsModel.setFilter(filterType);
     this._activeFilterType = filterType;
   }
 
-  _onDataChange() {
-    this.render();
-  } */
+  _onReset() {
+    this._filterComponent.resetFilter();
+  }
 }

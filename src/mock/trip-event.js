@@ -2,11 +2,12 @@ import {DESTINATIONS, EVENT_TYPES, getRandomIntegerNumber, getRandomArrayItem, g
 
 const OFFER_TITLES = [`Order Uber`, `Add luggage`, `Switch to comfort`, `Rent a car`, `Add breakfast`, `Book tickets`, `Lunch in city`];
 const EVENTS_COUNT = 20;
+let id = 1;
 
 const generateOffer = () => {
   return {
-    offerTitle: getRandomArrayItem(OFFER_TITLES),
-    offerPrice: getRandomIntegerNumber(1, 50) * 10,
+    title: getRandomArrayItem(OFFER_TITLES),
+    price: getRandomIntegerNumber(1, 50) * 10,
   };
 };
 
@@ -31,13 +32,13 @@ const generateTripEvent = () => {
     start,
     finish,
     destination: getRandomArrayItem(DESTINATIONS),
-    id: getRandomIntegerNumber(1, 20),
+    id: id++,
     isFavorite: Math.random() > 0.5,
     offers: generateNewArray(getRandomIntegerNumber(0, 5), generateOffer),
     type: getRandomArrayItem(EVENT_TYPES),
   };
 };
 
-const tripEvents = generateNewArray(EVENTS_COUNT, generateTripEvent).sort((a, b) => a.start - b.start);
+const tripEvents = generateNewArray(EVENTS_COUNT, generateTripEvent);
 
 export {tripEvents};

@@ -2,8 +2,9 @@ import AbstractComponent from "./abstract-component.js";
 
 const createTripListTemplate = () => {
   return (
-    `<ul class="trip-days">
-    </ul>`
+    `<section class="trip-events">
+      <h2 class="visually-hidden">Trip events</h2>
+    </section>`
   );
 };
 
