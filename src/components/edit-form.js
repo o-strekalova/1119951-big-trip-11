@@ -1,14 +1,10 @@
 import {getPreposition, TRANSPORTS, ACTIVITIES} from "./../utils/common.js";
 import AbstractSmartComponent from "./abstract-smart-component.js";
-import {offersForTypes} from "./../mock/offers-for-types.js";
-import {destinations} from "./../mock/destinations.js";
 import {Mode} from "./../controllers/point.js";
 import {createStartFlatpickr, createFinishFlatpickr} from "./../utils/flatpickr.js";
 import flatpickr from "flatpickr";
 
 import "flatpickr/dist/flatpickr.min.css";
-
-const DESTINATIONS = [`Amsterdam`, `Geneva`, `Chamonix`, `Saint-Petersburg`];
 const idList = [];
 
 const createTypeInputMarkup = (eventTypes, checkedType, id) => {
@@ -25,8 +21,8 @@ const createTypeInputMarkup = (eventTypes, checkedType, id) => {
     .join(`\n`);
 };
 
-const createDestinationSelectMarkup = (allDestinations, selectedDestination) => {
-  return allDestinations
+const createDestinationSelectMarkup = (destinationsAll, selectedDestination) => {
+  return destinationsAll
     .map((destination) => {
       const isSelected = destination === selectedDestination;
       return (
@@ -55,10 +51,10 @@ const createOffersMarkup = (availableOffers, chosenOffers, id) => {
     .join(`\n`);
 };
 
-const createEditFormTemplate = (tripEvent, mode) => {
+const createEditFormTemplate = (tripEvent, mode, offersAll, destinationsAll) => {
+  // console.log(offersAll);
   let {id, type, destination, offers: chosenOffers, price, isFavorite} = tripEvent;
-  const chosenDestination = destination ? destinations.find((it) => it.name === destination) : Object.assign({}, {name: ``});
-  const chosenTypeOfOffers = offersForTypes.find((it) => it.type === type);
+  const chosenTypeOfOffers = offersAll.find((it) => it.type === type);
   const availableOffers = chosenTypeOfOffers.offers;
 
   if (id === undefined) {
@@ -70,16 +66,14 @@ const createEditFormTemplate = (tripEvent, mode) => {
   }
 
   let destinationSection = ``;
-  if (destination) {
-    const picturesList = document.createElement(`div`);
-    for (let i = 0; i < chosenDestination.pictures.length; i++) {
-      picturesList.insertAdjacentHTML(`beforeend`, `<img class="event__photo" src="${chosenDestination.pictures[i].src}" alt="Event photo"></img>`);
-    }
+  const picturesList = document.createElement(`div`);
+  for (let i = 0; i < destination.pictures.length; i++) {
+    picturesList.insertAdjacentHTML(`beforeend`, `<img class="event__photo" src="${destination.pictures[i].src}" alt="Event photo"></img>`);
 
     destinationSection =
     `<section class="event__section  event__section--destination">
           <h3 class="event__section-title  event__section-title--destination">Destination</h3>
-          <p class="event__destination-description">${chosenDestination.description}</p>
+          <p class="event__destination-description">${destination.description}</p>
 
           <div class="event__photos-container">
             <div class="event__photos-tape">
@@ -129,7 +123,7 @@ const createEditFormTemplate = (tripEvent, mode) => {
           ${type.charAt(0).toUpperCase() + type.slice(1)} ${getPreposition(type)}
           </label>
           <select class="event__input  event__input--destination" id="event-destination-${id}" name="event-destination" required>
-          ${createDestinationSelectMarkup(DESTINATIONS, destination)}
+          ${createDestinationSelectMarkup(destinationsAll, destination)}
           </select>
         </div>
 
@@ -172,7 +166,7 @@ const createEditFormTemplate = (tripEvent, mode) => {
 };
 
 export default class EditForm extends AbstractSmartComponent {
-  constructor(tripEvent, mode) {
+  constructor(tripEvent, mode, offersAll, destinationsAll) {
     super();
     this._event = tripEvent;
     this._type = tripEvent.type;
@@ -183,6 +177,8 @@ export default class EditForm extends AbstractSmartComponent {
     this._price = tripEvent.price;
     this._isFavorite = tripEvent.isFavorite;
     this._offers = tripEvent.offers;
+    this._offersAll = offersAll;
+    this._destinationsAll = destinationsAll;
 
     this._mode = mode;
     this._flatpickrForStart = null;
@@ -197,7 +193,7 @@ export default class EditForm extends AbstractSmartComponent {
   }
 
   getTemplate() {
-    return createEditFormTemplate(this._event, this._mode);
+    return createEditFormTemplate(this._event, this._mode, this._offersAll, this._destinationsAll);
   }
 
   recoveryListeners() {
@@ -233,11 +229,14 @@ export default class EditForm extends AbstractSmartComponent {
 
   _parseFormData(formData) {
     const type = formData.get(`event-type`);
-    const chosenTypeOfOffers = offersForTypes.find((it) => it.type === type).offers;
+    const chosenTypeOfOffers = this._offersAll.find((it) => it.type === type).offers;
 
     const checkedOffers = formData.getAll(`event-offer`).map((offer) => {
       return chosenTypeOfOffers.find((it) => it.title === offer);
     });
+
+    const destinationName = formData.get(`event-destination`);
+    const destination = this._destinationAll.find((it) => it.name === destinationName);
 
     let start = this._flatpickrForStart.selectedDates[0];
     let finish = this._flatpickrForEnd.selectedDates[0];
@@ -245,7 +244,7 @@ export default class EditForm extends AbstractSmartComponent {
     return {
       id: this._id,
       type,
-      destination: formData.get(`event-destination`),
+      destination,
       start,
       finish,
       price: Number(formData.get(`event-price`)),
@@ -360,7 +359,7 @@ export default class EditForm extends AbstractSmartComponent {
     element.querySelectorAll(`.event__offer-checkbox`)
     .forEach((it) => it
       .addEventListener(`change`, (evt) => {
-        const chosenTypeOfOffers = offersForTypes.find((offersType) => offersType.type === this._event.type).offers;
+        const chosenTypeOfOffers = this._offersAll.find((offersType) => offersType.type === this._event.type).offers;
         let newOffer = chosenTypeOfOffers.find((offer) => offer.title === evt.target.value);
 
         if (it.checked) {

@@ -4,7 +4,6 @@ import AbstractComponent from "./abstract-component.js";
 const createTripEventTemplate = (tripEvent) => {
 
   let {type, destination, offers, start, finish, price} = tripEvent;
-
   let duration = formatDays(finish - start);
 
   const offersList = document.createElement(`ul`);
@@ -25,7 +24,7 @@ const createTripEventTemplate = (tripEvent) => {
                 <div class="event__type">
                   <img class="event__type-icon" width="42" height="42" src="img/icons/${type}.png" alt="Event type icon">
                 </div>
-                <h3 class="event__title">${type.charAt(0).toUpperCase() + type.slice(1)} ${getPreposition(type)} ${destination}</h3>
+                <h3 class="event__title">${type.charAt(0).toUpperCase() + type.slice(1)} ${getPreposition(type)} ${destination.name}</h3>
 
                 <div class="event__schedule">
                   <p class="event__time">
