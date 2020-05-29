@@ -8,7 +8,8 @@ import {render, RenderPosition} from "../utils/render.js";
 const addPointButton = document.querySelector(`.trip-main__event-add-btn`);
 let pointControllers = [];
 
-const renderDays = (daysListElement, tripEvents, onDataChange, onViewChange) => {
+const renderDays = (daysListElement, tripEvents, onDataChange, onViewChange, offersAll, destinationsAll) => {
+  // console.log(offersAll, destinationsAll);
   const sortedEvents = tripEvents.slice().sort((a, b) => a.start - b.start);
   let allDates = Array.from(sortedEvents, ({start}) => start.toDateString());
   let days = [...new Set(allDates)];
@@ -21,7 +22,7 @@ const renderDays = (daysListElement, tripEvents, onDataChange, onViewChange) => 
     let events = daysListElement.querySelectorAll(`.trip-events__list`);
     let dateEvents = sortedEvents.slice().filter((tripEvent) => tripEvent.start.toDateString() === day.toDateString());
     dateEvents.map((dateEvent) => {
-      const pointController = new PointController(events[count - 2], onDataChange, onViewChange);
+      const pointController = new PointController(events[count - 2], onDataChange, onViewChange, offersAll, destinationsAll);
       pointController.render(dateEvent, PointControllerMode.DEFAULT);
 
       pointControllers.push(pointController);
@@ -54,6 +55,8 @@ export default class TripController {
 
     this._pointControllers = pointControllers;
     this._tripEvents = [];
+    this._offersAll = [];
+    this._destinationsAll = [];
     this._creatingPoint = null;
     this._sortType = SortType.EVENT;
 
@@ -70,6 +73,22 @@ export default class TripController {
     this._sort.setSortTypeChangeHandler(this._onSortTypeChange);
     this._pointsModel.setFilterChangeHandler(this._onFilterChange);
   }
+
+  setOffers(offers) {
+    this._offersAll = Array.from(offers);
+  }
+
+  /* getOffersAll() {
+    return this._offersAll;
+  } */
+
+  setDestinations(destinations) {
+    this._destinationsAll = Array.from(destinations);
+  }
+
+  /* getDestinationsAll() {
+    return this._destinationsAll;
+  } */
 
   hide() {
     this._container.hide();
@@ -93,7 +112,7 @@ export default class TripController {
 
     render(eventsTitleElement, this._sort, RenderPosition.AFTER);
     render(tripEventsElement, this._daysList, RenderPosition.BEFOREEND);
-    renderDays(this._daysList.getElement(), this._tripEvents, this._onDataChange, this._onViewChange);
+    renderDays(this._daysList.getElement(), this._tripEvents, this._onDataChange, this._onViewChange, this._offersAll, this._destinationsAll);
   }
 
   createPoint() {
@@ -105,7 +124,7 @@ export default class TripController {
     this._onViewChange();
     this._pointsModel.resetFilter();
     this._onFilterChange();
-    this._creatingPoint = new PointController(this._daysList.getElement(), this._onDataChange, this._onViewChange);
+    this._creatingPoint = new PointController(this._daysList.getElement(), this._onDataChange, this._onViewChange, this._offersAll, this._destinationsAll);
     this._creatingPoint.render(EmptyPoint, PointControllerMode.ADDING);
     addPointButton.setAttribute(`disabled`, `disabled`);
   }
@@ -120,14 +139,14 @@ export default class TripController {
     this._daysList.getElement().innerHTML = ``;
 
     if (sortType === SortType.EVENT) {
-      renderDays(this._daysList.getElement(), this._tripEvents, this._onDataChange, this._onViewChange);
+      renderDays(this._daysList.getElement(), this._tripEvents, this._onDataChange, this._onViewChange, this._offersAll, this._destinationsAll);
     } else {
       render(this._daysList.getElement(), new TripDay(new Date(), ``), RenderPosition.BEFOREEND);
       const dayInfo = this._daysList.getElement().querySelector(`.day__info`);
       dayInfo.innerHTML = ``;
       const eventsList = this._daysList.getElement().querySelector(`.trip-events__list`);
       sortedEvents.map((tripEvent) => {
-        const pointController = new PointController(eventsList, this._onDataChange, this._onViewChange);
+        const pointController = new PointController(eventsList, this._onDataChange, this._onViewChange, this._offersAll, this._destinationsAll);
         pointController.render(tripEvent, PointControllerMode.DEFAULT);
         this._pointControllers.push(pointController);
       });

@@ -19,12 +19,14 @@ export const EmptyPoint = {
 };
 
 export default class PointController {
-  constructor(container, onDataChange, onViewChange) {
+  constructor(container, onDataChange, onViewChange, offersAll, destinationsAll) {
     this._container = container;
     this._onDataChange = onDataChange;
     this._onViewChange = onViewChange;
     this._mode = Mode.DEFAULT;
     this._event = null;
+    this._offersAll = offersAll;
+    this._destinationsAll = destinationsAll;
 
     this._tripEventComponent = null;
     this._editFormComponent = null;
@@ -38,7 +40,7 @@ export default class PointController {
     this._event = tripEvent;
 
     this._tripEventComponent = new TripEvent(tripEvent);
-    this._editFormComponent = new EditForm(tripEvent, this._mode);
+    this._editFormComponent = new EditForm(tripEvent, this._mode, this._offersAll, this._destinationsAll);
 
     this._tripEventComponent.setEditButtonHandler(() => {
       this._replaceEventToEdit();
