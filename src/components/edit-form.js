@@ -7,6 +7,11 @@ import flatpickr from "flatpickr";
 
 import "flatpickr/dist/flatpickr.min.css";
 
+const DefaultData = {
+  deleteButtonText: `Delete`,
+  saveButtonText: `Save`,
+};
+
 const createTypeInputMarkup = (eventTypes, checkedType, id) => {
   return eventTypes
     .map((eventType) => {
@@ -57,7 +62,7 @@ const createOffersMarkup = (availableOffers, chosenOffers, id) => {
     .join(`\n`);
 };
 
-const createEditFormTemplate = (tripEvent, mode, offersAll, destinationsAll, currentId) => {
+const createEditFormTemplate = (tripEvent, mode, offersAll, destinationsAll, currentId, externalData) => {
   let {id, type, destination, offers: chosenOffers, price, isFavorite} = tripEvent;
 
   if (id === undefined || isNaN(Number(id))) {
@@ -104,7 +109,7 @@ const createEditFormTemplate = (tripEvent, mode, offersAll, destinationsAll, cur
 
   const isCreatingPoint = mode === Mode.ADDING;
   const buttonsTemplate = isCreatingPoint ? `<button class="event__reset-btn" type="reset">Cancel</button>` :
-    `<button class="event__reset-btn" type="reset">Delete</button>
+    `<button class="event__reset-btn" type="reset">${externalData.deleteButtonText}</button>
     <input id="event-favorite-${id}" class="event__favorite-checkbox visually-hidden" type="checkbox" name="event-favorite" ${isFavorite ? `checked` : ``}>
     <label class="event__favorite-btn" for="event-favorite-${id}">
       <span class="visually-hidden">Add to favorite</span>
@@ -166,7 +171,7 @@ const createEditFormTemplate = (tripEvent, mode, offersAll, destinationsAll, cur
           <input class="event__input  event__input--price" id="event-price-${id}" type="number" name="event-price" value="${price}" required>
         </div>
 
-        <button class="event__save-btn  btn  btn--blue" type="submit">Save</button>
+        <button class="event__save-btn  btn  btn--blue" type="submit">${externalData.saveButtonText}</button>
         ${buttonsTemplate}
       </header>
       <section class="event__details">
@@ -190,6 +195,7 @@ export default class EditForm extends AbstractSmartComponent {
     this._price = tripEvent.price;
     this._isFavorite = tripEvent.isFavorite;
     this._offers = tripEvent.offers;
+    this._externalData = DefaultData;
     this._offersAll = offersAll;
     this._destinationsAll = destinationsAll;
 
@@ -210,7 +216,30 @@ export default class EditForm extends AbstractSmartComponent {
       this._currentId = Math.round(Math.random() * 100);
     }
 
-    return createEditFormTemplate(this._event, this._mode, this._offersAll, this._destinationsAll, this._currentId);
+    return createEditFormTemplate(this._event, this._mode, this._offersAll, this._destinationsAll, this._currentId, this._externalData);
+  }
+
+  blockForm() {
+    this.getElement().querySelectorAll(`input`)
+      .forEach((input) => input.setAttribute(`disabled`, `disabled`));
+    this.getElement().querySelectorAll(`button`)
+      .forEach((button) => button.setAttribute(`disabled`, `disabled`));
+    this.getElement().querySelector(`select`)
+      .setAttribute(`disabled`, `disabled`);
+  }
+
+  unblockForm() {
+    this.getElement().querySelectorAll(`input`)
+      .forEach((input) => input.removeAttribute(`disabled`, `disabled`));
+    this.getElement().querySelectorAll(`button`)
+      .forEach((button) => button.removeAttribute(`disabled`, `disabled`));
+    this.getElement().querySelector(`select`)
+      .removeAttribute(`disabled`, `disabled`);
+  }
+
+  setData(data) {
+    this._externalData = Object.assign({}, DefaultData, data);
+    this.rerender();
   }
 
   recoveryListeners() {
@@ -260,7 +289,7 @@ export default class EditForm extends AbstractSmartComponent {
     const destinationName = formData.get(`event-destination`);
     let destination = {
       name: destinationName,
-      description: ``,
+      description: `Failed to load description`,
       pictures: [],
     };
 

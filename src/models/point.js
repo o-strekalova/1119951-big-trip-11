@@ -12,7 +12,7 @@ export default class Point {
 
   toRAW() {
     return {
-      "id": this.id,
+      "id": String(this.id),
       "base_price": this.price,
       "date_from": this.start,
       "date_to": this.finish,

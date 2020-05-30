@@ -62,7 +62,7 @@ export default class TripController {
 
     this._sort = new Sort();
     this._daysList = new DaysList();
-    this._noEvents = new NoEvents(`Click New Event to create your first point`);
+    this._noEvents = null;
     this._fail = null;
 
     this._onDataChange = this._onDataChange.bind(this);
@@ -88,6 +88,9 @@ export default class TripController {
     this._api.getDestinations()
       .then((destinations) => {
         this._destinationsAll = destinations;
+      })
+      .catch(() => {
+        this._fail = new NoEvents(`Failed to load destinations.\n Impossible to add point.`);
       });
   }
 
@@ -104,8 +107,13 @@ export default class TripController {
   render() {
     this._tripEvents = this._pointsModel.getPoints();
 
-    if (this._tripEvents.length === 0) {
+    if (this._tripEvents.length === 0 && this._fail === null) {
+      this._noEvents = new NoEvents(`Click New Event to create your first point`);
       render(this._container.getElement(), this._noEvents, RenderPosition.BEFOREEND);
+      return;
+    } else if (this._tripEvents.length === 0 && this._fail !== null) {
+      addPointButton.setAttribute(`disabled`, `disabled`);
+      render(this._container.getElement(), this._fail, RenderPosition.BEFOREEND);
       return;
     }
 
@@ -121,22 +129,19 @@ export default class TripController {
       return;
     }
 
-    if (this._destinationsAll.length > 0) {
-      this._onViewChange();
-      this._pointsModel.resetFilter();
-      this._onFilterChange();
-      render(this._container.getElement(), this._daysList, RenderPosition.BEFOREEND);
-      this._creatingPoint = new PointController(this._daysList.getElement(), this._onDataChange, this._onViewChange, this._offersAll, this._destinationsAll);
-      this._creatingPoint.render(EmptyPoint, PointControllerMode.ADDING);
-      addPointButton.setAttribute(`disabled`, `disabled`);
-    } else {
-      this._fail = new NoEvents(`Failed to load destinations.\n Impossible to add point.`);
-      render(this._container.getElement(), this._fail, RenderPosition.BEFOREEND);
-    }
+    this._onViewChange();
+    this._pointsModel.resetFilter();
+    this._onFilterChange();
+    render(this._container.getElement(), this._daysList, RenderPosition.BEFOREEND);
+    this._creatingPoint = new PointController(this._daysList.getElement(), this._onDataChange, this._onViewChange, this._offersAll, this._destinationsAll);
+    this._creatingPoint.render(EmptyPoint, PointControllerMode.ADDING);
+    addPointButton.setAttribute(`disabled`, `disabled`);
   }
 
   onAddButtonClick() {
-    remove(this._noEvents);
+    if (this._noEvents) {
+      remove(this._noEvents);
+    }
     this.createPoint();
     addPointButton.removeEventListener(`click`, this.onAddButtonClick);
   }
@@ -161,7 +166,7 @@ export default class TripController {
   }
 
   _updateAddButton() {
-    if (addPointButton.disabled) {
+    if (addPointButton.disabled && this._destinationsAll.length > 0) {
       this._creatingPoint = null;
       addPointButton.removeAttribute(`disabled`, `disabled`);
       addPointButton.addEventListener(`click`, this.onAddButtonClick);
@@ -191,13 +196,25 @@ export default class TripController {
         pointController.destroy();
         this._updateAddButton();
       } else {
-        this._pointsModel.addPoint(newData);
-        this._updatePoints();
-        this._updateAddButton();
+        this._api.createPoint(newData)
+          .then((pointModel) => {
+            this._pointsModel.addPoint(pointModel);
+            this._updatePoints();
+            this._updateAddButton();
+          })
+          .catch(() => {
+            pointController.shake();
+          });
       }
     } else if (newData === null) {
-      this._pointsModel.removePoint(oldData.id);
-      this._updatePoints();
+      this._api.deletePoint(oldData.id)
+        .then(() => {
+          this._pointsModel.removePoint(oldData.id);
+          this._updatePoints();
+        })
+        .catch(() => {
+          pointController.shake();
+        });
     } else {
       this._api.updatePoint(oldData.id, newData)
         .then((pointModel) => {
@@ -205,6 +222,9 @@ export default class TripController {
           this._updatePoints();
           this._creatingPoint = null;
           this._updateAddButton();
+        })
+        .catch(() => {
+          pointController.shake();
         });
     }
   }

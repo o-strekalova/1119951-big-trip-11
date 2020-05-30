@@ -10,7 +10,7 @@ import PointsModel from "./models/points.js";
 import StatisticsComponent from "./components/statistics.js";
 import {render, remove, RenderPosition} from "./utils/render.js";
 
-// wgHmgtWo4C11c3jCtxE1
+// Авторизация `Basic wgHmgtWo4C11c3jCtxE1`
 
 const AUTHORIZATION = `Basic wgHmgtWo4C11c3jCtxE1`;
 const END_POINT = `https://11.ecmascript.pages.academy/big-trip`;
@@ -70,7 +70,6 @@ api.getPoints()
     tripController.render();
   })
   .catch(() => {
-    pointsModel.setPoints([]);
     remove(loadScreenComponent);
     tripController.render();
   });
