@@ -21,6 +21,7 @@ export const EmptyPoint = {
 export default class PointController {
   constructor(container, onDataChange, onViewChange, offersAll, destinationsAll) {
     this._container = container;
+
     this._onDataChange = onDataChange;
     this._onViewChange = onViewChange;
     this._mode = Mode.DEFAULT;

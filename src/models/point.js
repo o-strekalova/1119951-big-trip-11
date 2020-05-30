@@ -1,6 +1,6 @@
 export default class Point {
   constructor(data) {
-    this.id = Number(data[`id`]);
+    this.id = data[`id`];
     this.price = Number(data[`base_price`]);
     this.start = new Date(data[`date_from`]);
     this.finish = new Date(data[`date_to`]);

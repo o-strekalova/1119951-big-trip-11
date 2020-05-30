@@ -2,10 +2,10 @@ import {getPreposition, TRANSPORTS, ACTIVITIES} from "./../utils/common.js";
 import AbstractSmartComponent from "./abstract-smart-component.js";
 import {Mode} from "./../controllers/point.js";
 import {createStartFlatpickr, createFinishFlatpickr} from "./../utils/flatpickr.js";
+import PointModel from "./../models/point.js";
 import flatpickr from "flatpickr";
 
 import "flatpickr/dist/flatpickr.min.css";
-const idList = [];
 
 const createTypeInputMarkup = (eventTypes, checkedType, id) => {
   return eventTypes
@@ -22,20 +22,26 @@ const createTypeInputMarkup = (eventTypes, checkedType, id) => {
 };
 
 const createDestinationSelectMarkup = (destinationsAll, selectedDestination) => {
-  return destinationsAll
-    .map((destination) => {
-      const isSelected = destination === selectedDestination;
-      return (
-        `<option value="${destination}" ${isSelected ? `selected` : ``}>${destination}</option>`
-      );
-    })
-    .join(`\n`);
+  if (destinationsAll.length > 0) {
+    return destinationsAll
+      .map((destination) => {
+        const isSelected = destination.name === selectedDestination.name;
+        return (
+          `<option value="${destination.name}" ${isSelected ? `selected` : ``}>${destination.name}</option>`
+        );
+      })
+      .join(`\n`);
+  } else {
+    return (
+      `<option value="${selectedDestination.name}" selected>${selectedDestination.name}</option>`
+    );
+  }
 };
 
 const createOffersMarkup = (availableOffers, chosenOffers, id) => {
   return availableOffers
     .map((offer) => {
-      const isOfferChecked = chosenOffers.indexOf(offer) >= 0;
+      const isOfferChecked = chosenOffers.some((chosenOffer) => chosenOffer.title === offer.title);
       const {title: offerTitle, price: offerPrice} = offer;
       return (
         `<div class="event__offer-selector">
@@ -51,36 +57,49 @@ const createOffersMarkup = (availableOffers, chosenOffers, id) => {
     .join(`\n`);
 };
 
-const createEditFormTemplate = (tripEvent, mode, offersAll, destinationsAll) => {
-  // console.log(offersAll);
+const createEditFormTemplate = (tripEvent, mode, offersAll, destinationsAll, currentId) => {
   let {id, type, destination, offers: chosenOffers, price, isFavorite} = tripEvent;
-  const chosenTypeOfOffers = offersAll.find((it) => it.type === type);
-  const availableOffers = chosenTypeOfOffers.offers;
 
-  if (id === undefined) {
-    id = Math.max.apply(null, idList) + 1;
+  if (id === undefined || isNaN(Number(id))) {
+    id = currentId;
   }
 
-  if (idList.indexOf(id) === -1) {
-    idList.push(id);
+  let offersSection = ``;
+
+  if (offersAll.length > 0) {
+    const chosenTypeOfOffers = offersAll.find((it) => it.type === type);
+    const availableOffers = chosenTypeOfOffers.offers;
+    if (availableOffers.length > 0) {
+      offersSection =
+      `<section class="event__section  event__section--offers">
+        <h3 class="event__section-title  event__section-title--offers">Offers</h3>
+
+        <div class="event__available-offers">
+        ${createOffersMarkup(availableOffers, chosenOffers, id)}
+        </div>
+      </section>`;
+    }
   }
 
   let destinationSection = ``;
-  const picturesList = document.createElement(`div`);
-  for (let i = 0; i < destination.pictures.length; i++) {
-    picturesList.insertAdjacentHTML(`beforeend`, `<img class="event__photo" src="${destination.pictures[i].src}" alt="Event photo"></img>`);
 
-    destinationSection =
-    `<section class="event__section  event__section--destination">
-          <h3 class="event__section-title  event__section-title--destination">Destination</h3>
-          <p class="event__destination-description">${destination.description}</p>
+  if (destination && destinationsAll.length > 0) {
+    const picturesList = document.createElement(`div`);
+    for (let i = 0; i < destination.pictures.length; i++) {
+      picturesList.insertAdjacentHTML(`beforeend`, `<img class="event__photo" src="${destination.pictures[i].src}" alt="Event photo"></img>`);
 
-          <div class="event__photos-container">
-            <div class="event__photos-tape">
-              ${picturesList.innerHTML}
+      destinationSection =
+      `<section class="event__section  event__section--destination">
+            <h3 class="event__section-title  event__section-title--destination">Destination</h3>
+            <p class="event__destination-description">${destination.description}</p>
+
+            <div class="event__photos-container">
+              <div class="event__photos-tape">
+                ${picturesList.innerHTML}
+              </div>
             </div>
-          </div>
-        </section>`;
+          </section>`;
+    }
   }
 
   const isCreatingPoint = mode === Mode.ADDING;
@@ -151,14 +170,7 @@ const createEditFormTemplate = (tripEvent, mode, offersAll, destinationsAll) => 
         ${buttonsTemplate}
       </header>
       <section class="event__details">
-        <section class="event__section  event__section--offers">
-          <h3 class="event__section-title  event__section-title--offers">Offers</h3>
-
-          <div class="event__available-offers">
-          ${createOffersMarkup(availableOffers, chosenOffers, id)}
-          </div>
-        </section>
-
+        ${offersSection}
         ${destinationSection}
       </section>
     </form>`
@@ -171,6 +183,7 @@ export default class EditForm extends AbstractSmartComponent {
     this._event = tripEvent;
     this._type = tripEvent.type;
     this._id = tripEvent.id;
+    this._currentId = this._id;
     this._destination = tripEvent.destination;
     this._start = tripEvent.start;
     this._finish = tripEvent.finish;
@@ -193,7 +206,11 @@ export default class EditForm extends AbstractSmartComponent {
   }
 
   getTemplate() {
-    return createEditFormTemplate(this._event, this._mode, this._offersAll, this._destinationsAll);
+    if (this._event.id === undefined || isNaN(Number(this._event.id))) {
+      this._currentId = Math.round(Math.random() * 100);
+    }
+
+    return createEditFormTemplate(this._event, this._mode, this._offersAll, this._destinationsAll, this._currentId);
   }
 
   recoveryListeners() {
@@ -216,6 +233,7 @@ export default class EditForm extends AbstractSmartComponent {
   }
 
   reset() {
+    this._event.id = this._id;
     this._event.type = this._type;
     this._event.destination = this._destination;
     this._event.start = this._start;
@@ -229,28 +247,36 @@ export default class EditForm extends AbstractSmartComponent {
 
   _parseFormData(formData) {
     const type = formData.get(`event-type`);
-    const chosenTypeOfOffers = this._offersAll.find((it) => it.type === type).offers;
+    let checkedOffers = [];
 
-    const checkedOffers = formData.getAll(`event-offer`).map((offer) => {
-      return chosenTypeOfOffers.find((it) => it.title === offer);
-    });
+    if (this._offersAll.length > 0) {
+      const chosenTypeOfOffers = this._offersAll.find((it) => it.type === type).offers;
+
+      checkedOffers = formData.getAll(`event-offer`).map((offer) => {
+        return chosenTypeOfOffers.find((it) => it.title === offer);
+      });
+    }
 
     const destinationName = formData.get(`event-destination`);
-    const destination = this._destinationAll.find((it) => it.name === destinationName);
+    const destination = this._destinationsAll.find((it) => it.name === destinationName);
 
     let start = this._flatpickrForStart.selectedDates[0];
     let finish = this._flatpickrForEnd.selectedDates[0];
 
-    return {
-      id: this._id,
-      type,
-      destination,
-      start,
-      finish,
-      price: Number(formData.get(`event-price`)),
-      isFavorite: Boolean(formData.get(`event-favorite`)),
-      offers: checkedOffers,
-    };
+    if (this._id === undefined) {
+      this._id = this._currentId;
+    }
+
+    return new PointModel({
+      "id": this._id,
+      "type": type,
+      "destination": destination,
+      "date_from": start,
+      "date_to": finish,
+      "base_price": formData.get(`event-price`),
+      "is_favorite": Boolean(formData.get(`event-favorite`)),
+      "offers": checkedOffers,
+    });
   }
 
   getData() {
@@ -295,12 +321,8 @@ export default class EditForm extends AbstractSmartComponent {
     destroyFlatpickr(this._flatpickrForStart);
     destroyFlatpickr(this._flatpickrForEnd);
 
-    if (this._id === undefined) {
-      this._id = Math.max.apply(null, idList);
-    }
-
-    const startDateElement = this.getElement().querySelector(`#event-start-time-${this._id}`);
-    const endDateElement = this.getElement().querySelector(`#event-end-time-${this._id}`);
+    const startDateElement = this.getElement().querySelector(`#event-start-time-${this._currentId}`);
+    const endDateElement = this.getElement().querySelector(`#event-end-time-${this._currentId}`);
     const submitButton = this.getElement().querySelector(`.event__save-btn`);
 
     const onChange = () => {
@@ -311,6 +333,7 @@ export default class EditForm extends AbstractSmartComponent {
         submitButton.disabled = true;
       }
     };
+
     this._flatpickrForStart = flatpickr(startDateElement, createStartFlatpickr(this._event, onChange));
     this._flatpickrForEnd = flatpickr(endDateElement, createFinishFlatpickr(this._event, onChange));
   }
@@ -328,7 +351,7 @@ export default class EditForm extends AbstractSmartComponent {
 
     element.querySelector(`.event__input--destination`)
       .addEventListener(`change`, (evt) => {
-        this._event.destination = evt.target.value;
+        this._event.destination = this._destinationsAll.find((it) => it.name === evt.target.value);
         this.rerender();
       });
 

@@ -3,13 +3,12 @@ import DaysList from "../components/days-list.js";
 import TripDay from "../components/trip-day.js";
 import NoEvents from "../components/no-events.js";
 import PointController, {Mode as PointControllerMode, EmptyPoint} from "../controllers/point.js";
-import {render, RenderPosition} from "../utils/render.js";
+import {render, RenderPosition, remove} from "../utils/render.js";
 
 const addPointButton = document.querySelector(`.trip-main__event-add-btn`);
 let pointControllers = [];
 
 const renderDays = (daysListElement, tripEvents, onDataChange, onViewChange, offersAll, destinationsAll) => {
-  // console.log(offersAll, destinationsAll);
   const sortedEvents = tripEvents.slice().sort((a, b) => a.start - b.start);
   let allDates = Array.from(sortedEvents, ({start}) => start.toDateString());
   let days = [...new Set(allDates)];
@@ -49,9 +48,10 @@ const getSortedEvents = (tripEvents, sortType) => {
 };
 
 export default class TripController {
-  constructor(container, pointsModel) {
+  constructor(container, pointsModel, api) {
     this._container = container;
     this._pointsModel = pointsModel;
+    this._api = api;
 
     this._pointControllers = pointControllers;
     this._tripEvents = [];
@@ -62,7 +62,8 @@ export default class TripController {
 
     this._sort = new Sort();
     this._daysList = new DaysList();
-    this._noEvents = new NoEvents();
+    this._noEvents = new NoEvents(`Click New Event to create your first point`);
+    this._fail = null;
 
     this._onDataChange = this._onDataChange.bind(this);
     this._onViewChange = this._onViewChange.bind(this);
@@ -78,17 +79,9 @@ export default class TripController {
     this._offersAll = Array.from(offers);
   }
 
-  /* getOffersAll() {
-    return this._offersAll;
-  } */
-
   setDestinations(destinations) {
     this._destinationsAll = Array.from(destinations);
   }
-
-  /* getDestinationsAll() {
-    return this._destinationsAll;
-  } */
 
   hide() {
     this._container.hide();
@@ -102,16 +95,15 @@ export default class TripController {
 
   render() {
     this._tripEvents = this._pointsModel.getPoints();
-    const tripEventsElement = document.querySelector(`.trip-events`);
-    const eventsTitleElement = tripEventsElement.querySelector(`.trip-events h2`);
 
     if (this._tripEvents.length === 0) {
-      render(eventsTitleElement, this._noEvents, RenderPosition.AFTER);
+      render(this._container.getElement(), this._noEvents, RenderPosition.BEFOREEND);
       return;
     }
 
+    const eventsTitleElement = this._container.getElement().querySelector(`h2`);
     render(eventsTitleElement, this._sort, RenderPosition.AFTER);
-    render(tripEventsElement, this._daysList, RenderPosition.BEFOREEND);
+    render(this._container.getElement(), this._daysList, RenderPosition.BEFOREEND);
     renderDays(this._daysList.getElement(), this._tripEvents, this._onDataChange, this._onViewChange, this._offersAll, this._destinationsAll);
   }
 
@@ -121,15 +113,22 @@ export default class TripController {
       return;
     }
 
-    this._onViewChange();
-    this._pointsModel.resetFilter();
-    this._onFilterChange();
-    this._creatingPoint = new PointController(this._daysList.getElement(), this._onDataChange, this._onViewChange, this._offersAll, this._destinationsAll);
-    this._creatingPoint.render(EmptyPoint, PointControllerMode.ADDING);
-    addPointButton.setAttribute(`disabled`, `disabled`);
+    if (this._destinationsAll.length > 0) {
+      this._onViewChange();
+      this._pointsModel.resetFilter();
+      this._onFilterChange();
+      render(this._container.getElement(), this._daysList, RenderPosition.BEFOREEND);
+      this._creatingPoint = new PointController(this._daysList.getElement(), this._onDataChange, this._onViewChange, this._offersAll, this._destinationsAll);
+      this._creatingPoint.render(EmptyPoint, PointControllerMode.ADDING);
+      addPointButton.setAttribute(`disabled`, `disabled`);
+    } else {
+      this._fail = new NoEvents(`Failed to load destinations.\n Impossible to add point.`);
+      render(this._container.getElement(), this._fail, RenderPosition.BEFOREEND);
+    }
   }
 
   onAddButtonClick() {
+    remove(this._noEvents);
     this.createPoint();
     addPointButton.removeEventListener(`click`, this.onAddButtonClick);
   }
@@ -192,10 +191,13 @@ export default class TripController {
       this._pointsModel.removePoint(oldData.id);
       this._updatePoints();
     } else {
-      this._pointsModel.updatePoint(oldData.id, newData);
-      this._updatePoints();
-      this._creatingPoint = null;
-      this._updateAddButton();
+      this._api.updatePoint(oldData.id, newData)
+        .then((pointModel) => {
+          this._pointsModel.updatePoint(oldData.id, pointModel);
+          this._updatePoints();
+          this._creatingPoint = null;
+          this._updateAddButton();
+        });
     }
   }
 
