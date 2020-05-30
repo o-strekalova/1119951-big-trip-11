@@ -258,7 +258,15 @@ export default class EditForm extends AbstractSmartComponent {
     }
 
     const destinationName = formData.get(`event-destination`);
-    const destination = this._destinationsAll.find((it) => it.name === destinationName);
+    let destination = {
+      name: destinationName,
+      description: ``,
+      pictures: [],
+    };
+
+    if (this._destinationsAll.length > 0) {
+      destination = this._destinationsAll.find((it) => it.name === destinationName);
+    }
 
     let start = this._flatpickrForStart.selectedDates[0];
     let finish = this._flatpickrForEnd.selectedDates[0];

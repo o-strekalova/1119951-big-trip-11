@@ -10,6 +10,8 @@ import PointsModel from "./models/points.js";
 import StatisticsComponent from "./components/statistics.js";
 import {render, remove, RenderPosition} from "./utils/render.js";
 
+// wgHmgtWo4C11c3jCtxE1
+
 const AUTHORIZATION = `Basic wgHmgtWo4C11c3jCtxE1`;
 const END_POINT = `https://11.ecmascript.pages.academy/big-trip`;
 
@@ -61,36 +63,14 @@ siteMenuComponent.setOnChange((menuItem) => {
   }
 });
 
-pointsModel.setPoints([]);
-tripController.setOffers([]);
-tripController.setDestinations([]);
-
-api.getDestinations()
-  .then((destinations) => {
-    api.getOffers()
-      .then((offers) => {
-        api.getPoints()
-          .then((points) => {
-            pointsModel.setPoints(points);
-            tripController.setOffers(offers);
-            tripController.setDestinations(destinations);
-            remove(loadScreenComponent);
-            tripController.render();
-          })
-          .catch(() => {
-            tripController.setOffers(offers);
-            tripController.setDestinations(destinations);
-            remove(loadScreenComponent);
-            tripController.render();
-          });
-      })
-      .catch(() => {
-        tripController.setDestinations(destinations);
-        remove(loadScreenComponent);
-        tripController.render();
-      });
+api.getPoints()
+  .then((points) => {
+    pointsModel.setPoints(points);
+    remove(loadScreenComponent);
+    tripController.render();
   })
   .catch(() => {
+    pointsModel.setPoints([]);
     remove(loadScreenComponent);
     tripController.render();
   });

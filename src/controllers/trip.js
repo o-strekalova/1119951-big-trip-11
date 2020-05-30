@@ -73,14 +73,22 @@ export default class TripController {
 
     this._sort.setSortTypeChangeHandler(this._onSortTypeChange);
     this._pointsModel.setFilterChangeHandler(this._onFilterChange);
+    this._setOffers();
+    this._setDestinations();
   }
 
-  setOffers(offers) {
-    this._offersAll = Array.from(offers);
+  _setOffers() {
+    this._api.getOffers()
+      .then((offers) => {
+        this._offersAll = offers;
+      });
   }
 
-  setDestinations(destinations) {
-    this._destinationsAll = Array.from(destinations);
+  _setDestinations() {
+    this._api.getDestinations()
+      .then((destinations) => {
+        this._destinationsAll = destinations;
+      });
   }
 
   hide() {
