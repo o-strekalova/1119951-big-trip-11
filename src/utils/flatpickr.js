@@ -1,19 +1,19 @@
-export const createStartFlatpickr = (tripEvent, onChange) => {
+export const createStartFlatpickr = (point, onChange) => {
   return {
     enableTime: true,
     time_24hr: true,
     dateFormat: `d/m/Y H:i`,
-    defaultDate: tripEvent.start || `today`,
+    defaultDate: point.start || `today`,
     onChange,
   };
 };
 
-export const createFinishFlatpickr = (tripEvent, onChange) => {
+export const createEndFlatpickr = (point, onChange) => {
   return {
     enableTime: true,
     time_24hr: true,
     dateFormat: `d/m/Y H:i`,
-    defaultDate: tripEvent.finish || `today`,
+    defaultDate: point.end || `today`,
     onChange,
   };
 };

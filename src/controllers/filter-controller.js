@@ -17,10 +17,9 @@ export default class FilterController {
   }
 
   render() {
-    const container = this._container;
     this._filterComponent = new FilterComponent();
     this._filterComponent.setFilterChangeHandler(this._onFilterChange);
-    render(container, this._filterComponent, RenderPosition.BEFOREEND);
+    render(this._container, this._filterComponent, RenderPosition.BEFOREEND);
   }
 
   _onFilterChange(filterType) {

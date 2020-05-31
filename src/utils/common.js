@@ -1,6 +1,8 @@
 import moment from "moment";
 
-export const TRANSPORTS = [`taxi`, `bus`, `train`, `ship`, `transport`, `drive`, `flight`];
+const ONE_DAY = 86400000;
+
+export const TRANSPORT_TYPES = [`taxi`, `bus`, `train`, `ship`, `transport`, `drive`, `flight`];
 export const ACTIVITIES = [`check-in`, `sightseeing`, `restaurant`];
 
 export const formatTime = (date) => {
@@ -17,7 +19,7 @@ export const formatMonth = (date) => {
 
 export const formatDays = (date) => {
   if (date >= 86400000) {
-    const diff = moment.utc(date).subtract(86400000);
+    const diff = moment.utc(date).subtract(ONE_DAY);
     return diff.format(`DD[D] HH[H] mm[M]`);
   } else {
     return moment.utc(date).format(`HH[H] mm[M]`);
@@ -26,7 +28,7 @@ export const formatDays = (date) => {
 
 export const getPreposition = (type) => {
   let preposition = `in`;
-  if (TRANSPORTS.indexOf(type) > 0) {
+  if (TRANSPORT_TYPES.indexOf(type) > 0) {
     preposition = `to`;
   }
   return preposition;

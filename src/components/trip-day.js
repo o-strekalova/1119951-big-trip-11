@@ -1,5 +1,5 @@
-import {formatDate, formatMonth} from "./../utils/common.js";
 import AbstractComponent from "./abstract-component.js";
+import {formatDate, formatMonth} from "./../utils/common.js";
 
 const createTripDayTemplate = (date, count) => {
   const datetime = formatDate(date);
