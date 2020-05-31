@@ -6,7 +6,7 @@ import PointController, {Mode as PointControllerMode, EmptyPoint} from "./point-
 import {render, RenderPosition, remove} from "../utils/render.js";
 
 const addPointButton = document.querySelector(`.trip-main__event-add-btn`);
-let pointControllers = [];
+const pointControllers = [];
 
 const renderDays = (daysListElement, points, onDataChange, onViewChange, offersAll, destinationsAll) => {
   const sortedPoints = points.slice().sort((a, b) => a.start - b.start);
@@ -18,8 +18,8 @@ const renderDays = (daysListElement, points, onDataChange, onViewChange, offersA
   for (let day of days) {
     day = new Date(day);
     render(daysListElement, new TripDay(day, count++), RenderPosition.BEFOREEND);
-    let eventLists = daysListElement.querySelectorAll(`.trip-events__list`);
-    let datePoints = sortedPoints.slice().filter((point) => point.start.toDateString() === day.toDateString());
+    const eventLists = daysListElement.querySelectorAll(`.trip-events__list`);
+    const datePoints = sortedPoints.slice().filter((point) => point.start.toDateString() === day.toDateString());
     datePoints.map((datePoint) => {
       const pointController = new PointController(eventLists[count - 2], onDataChange, onViewChange, offersAll, destinationsAll);
       pointController.render(datePoint, PointControllerMode.DEFAULT);

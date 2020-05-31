@@ -64,7 +64,8 @@ const createOffersMarkup = (availableOffers, checkedOffers, id) => {
 };
 
 const createEditPointTemplate = (point, mode, offersAll, destinationsAll, currentId, externalText) => {
-  let {id, type, destination, offers: checkedOffers, price, isFavorite} = point;
+  const {type, destination, offers: checkedOffers, price, isFavorite} = point;
+  let {id} = point;
 
   if (id === undefined || isNaN(Number(id))) {
     id = currentId;
@@ -312,8 +313,8 @@ export default class EditPoint extends AbstractSmartComponent {
       destination = this._destinationsAll.find((it) => it.name === destinationName);
     }
 
-    let start = this._flatpickrForStart.selectedDates[0];
-    let end = this._flatpickrForEnd.selectedDates[0];
+    const start = this._flatpickrForStart.selectedDates[0];
+    const end = this._flatpickrForEnd.selectedDates[0];
 
     if (this._id === undefined) {
       this._id = this._currentId;
@@ -365,8 +366,8 @@ export default class EditPoint extends AbstractSmartComponent {
     const submitButton = this.getElement().querySelector(`.event__save-btn`);
 
     const onChange = () => {
-      let start = this._flatpickrForStart.selectedDates[0];
-      let end = this._flatpickrForEnd.selectedDates[0];
+      const start = this._flatpickrForStart.selectedDates[0];
+      const end = this._flatpickrForEnd.selectedDates[0];
       submitButton.disabled = false;
       if (start > end) {
         submitButton.disabled = true;
@@ -422,12 +423,12 @@ export default class EditPoint extends AbstractSmartComponent {
     .forEach((it) => it
       .addEventListener(`change`, (evt) => {
         const checkedTypeOfOffers = this._offersAll.find((offersType) => offersType.type === this._point.type).offers;
-        let newOffer = checkedTypeOfOffers.find((offer) => offer.title === evt.target.value);
+        const newOffer = checkedTypeOfOffers.find((offer) => offer.title === evt.target.value);
 
         if (it.checked) {
           this._point.offers.push(newOffer);
         } else {
-          let index = this._point.offers.indexOf(newOffer);
+          const index = this._point.offers.indexOf(newOffer);
           this._point.offers.splice(index);
         }
       }));
