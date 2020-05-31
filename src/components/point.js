@@ -1,22 +1,24 @@
-import {getPreposition, formatTime, formatDays, formatDate} from "./../utils/common.js";
 import AbstractComponent from "./abstract-component.js";
+import {formatDate, formatDays, formatTime, getPreposition} from "./../utils/common.js";
 
-const createTripEventTemplate = (tripEvent) => {
+const MAX_OFFERS_SHOWED = 3;
 
-  let {type, destination, offers, start, finish, price} = tripEvent;
-  let duration = formatDays(finish - start);
+const createPointTemplate = (point) => {
+
+  const {type, destination, offers, start, end, price} = point;
+  const duration = formatDays(end - start);
 
   const offersList = document.createElement(`ul`);
-  const numberOfOffers = offers.length > 3 ? 3 : offers.length;
+  const numberOfOffers = offers.length > MAX_OFFERS_SHOWED ? MAX_OFFERS_SHOWED : offers.length;
 
   for (let i = 0; i < numberOfOffers; i++) {
     const currentOffer = offers[i];
     const {title: offerTitle, price: offerPrice} = currentOffer;
     offersList.insertAdjacentHTML(`beforeend`, `<li class="event__offer">
-                                    <span class="event__offer-title">${offerTitle}</span>
-                                    &plus;
-                                    &euro;&nbsp;<span class="event__offer-price">${offerPrice}</span>
-                                  </li>`);
+                                                  <span class="event__offer-title">${offerTitle}</span>
+                                                  &plus;
+                                                  &euro;&nbsp;<span class="event__offer-price">${offerPrice}</span>
+                                                </li>`);
   }
 
   return (`<li class="trip-events__item">
@@ -30,7 +32,7 @@ const createTripEventTemplate = (tripEvent) => {
                   <p class="event__time">
                     <time class="event__start-time" datetime="${formatDate(start)}">${formatTime(start)}</time>
                     &mdash;
-                    <time class="event__end-time" datetime="${formatDate(finish)}">${formatTime(finish)}</time>
+                    <time class="event__end-time" datetime="${formatDate(end)}">${formatTime(end)}</time>
                   </p>
                   <p class="event__duration">${duration}</p>
                 </div>
@@ -52,17 +54,19 @@ const createTripEventTemplate = (tripEvent) => {
   );
 };
 
-export default class TripEvent extends AbstractComponent {
-  constructor(tripEvent) {
+export default class Point extends AbstractComponent {
+  constructor(point) {
     super();
-    this._event = tripEvent;
+    this._point = point;
   }
 
   getTemplate() {
-    return createTripEventTemplate(this._event);
+    return createPointTemplate(this._point);
   }
 
   setEditButtonHandler(cb) {
-    this.getElement().querySelector(`.event__rollup-btn`).addEventListener(`click`, cb);
+    this.getElement()
+      .querySelector(`.event__rollup-btn`)
+      .addEventListener(`click`, cb);
   }
 }

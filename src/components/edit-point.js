@@ -1,25 +1,26 @@
-import {getPreposition, TRANSPORTS, ACTIVITIES} from "./../utils/common.js";
 import AbstractSmartComponent from "./abstract-smart-component.js";
-import {Mode} from "./../controllers/point.js";
-import {createStartFlatpickr, createFinishFlatpickr} from "./../utils/flatpickr.js";
 import PointModel from "./../models/point.js";
+import {Mode} from "../controllers/point-controller.js";
+import {ACTIVITIES, TRANSPORT_TYPES, getPreposition} from "./../utils/common.js";
+import {createStartFlatpickr, createEndFlatpickr} from "./../utils/flatpickr.js";
 import flatpickr from "flatpickr";
-
 import "flatpickr/dist/flatpickr.min.css";
 
-const DefaultData = {
+const FREE_ID_MAX = 100;
+
+const defaultText = {
   deleteButtonText: `Delete`,
   saveButtonText: `Save`,
 };
 
-const createTypeInputMarkup = (eventTypes, checkedType, id) => {
-  return eventTypes
-    .map((eventType) => {
-      const isChecked = eventType === checkedType;
+const createTypeInputMarkup = (pointTypes, checkedType, id) => {
+  return pointTypes
+    .map((pointType) => {
+      const isChecked = pointType === checkedType;
       return (
         `<div class="event__type-item">
-          <input id="event-type-${eventType}-${id}" class="event__type-input  visually-hidden" type="radio" name="event-type" value="${eventType}" ${isChecked ? `checked` : ``}>
-          <label class="event__type-label  event__type-label--${eventType}" for="event-type-${eventType}-${id}">${eventType.charAt(0).toUpperCase() + eventType.slice(1)}</label>
+          <input id="event-type-${pointType}-${id}" class="event__type-input  visually-hidden" type="radio" name="event-type" value="${pointType}" ${isChecked ? `checked` : ``}>
+          <label class="event__type-label  event__type-label--${pointType}" for="event-type-${pointType}-${id}">${pointType.charAt(0).toUpperCase() + pointType.slice(1)}</label>
         </div>`
       );
     })
@@ -43,11 +44,11 @@ const createDestinationSelectMarkup = (destinationsAll, selectedDestination) => 
   }
 };
 
-const createOffersMarkup = (availableOffers, chosenOffers, id) => {
+const createOffersMarkup = (availableOffers, checkedOffers, id) => {
   return availableOffers
-    .map((offer) => {
-      const isOfferChecked = chosenOffers.some((chosenOffer) => chosenOffer.title === offer.title);
-      const {title: offerTitle, price: offerPrice} = offer;
+    .map((availableOffer) => {
+      const isOfferChecked = checkedOffers.some((checkedOffer) => availableOffer.title === checkedOffer.title);
+      const {title: offerTitle, price: offerPrice} = availableOffer;
       return (
         `<div class="event__offer-selector">
           <input class="event__offer-checkbox  visually-hidden" id="event-offer-${offerTitle}-${id}" type="checkbox" name="event-offer" value="${offerTitle}" ${isOfferChecked ? `checked` : ``}>
@@ -62,8 +63,8 @@ const createOffersMarkup = (availableOffers, chosenOffers, id) => {
     .join(`\n`);
 };
 
-const createEditFormTemplate = (tripEvent, mode, offersAll, destinationsAll, currentId, externalData) => {
-  let {id, type, destination, offers: chosenOffers, price, isFavorite} = tripEvent;
+const createEditPointTemplate = (point, mode, offersAll, destinationsAll, currentId, externalText) => {
+  let {id, type, destination, offers: checkedOffers, price, isFavorite} = point;
 
   if (id === undefined || isNaN(Number(id))) {
     id = currentId;
@@ -72,15 +73,15 @@ const createEditFormTemplate = (tripEvent, mode, offersAll, destinationsAll, cur
   let offersSection = ``;
 
   if (offersAll.length > 0) {
-    const chosenTypeOfOffers = offersAll.find((it) => it.type === type);
-    const availableOffers = chosenTypeOfOffers.offers;
+    const checkedTypeOfOffers = offersAll.find((offer) => offer.type === type);
+    const availableOffers = checkedTypeOfOffers.offers;
     if (availableOffers.length > 0) {
       offersSection =
       `<section class="event__section  event__section--offers">
         <h3 class="event__section-title  event__section-title--offers">Offers</h3>
 
         <div class="event__available-offers">
-        ${createOffersMarkup(availableOffers, chosenOffers, id)}
+        ${createOffersMarkup(availableOffers, checkedOffers, id)}
         </div>
       </section>`;
     }
@@ -91,7 +92,7 @@ const createEditFormTemplate = (tripEvent, mode, offersAll, destinationsAll, cur
   if (destination && destinationsAll.length > 0) {
     const picturesList = document.createElement(`div`);
     for (let i = 0; i < destination.pictures.length; i++) {
-      picturesList.insertAdjacentHTML(`beforeend`, `<img class="event__photo" src="${destination.pictures[i].src}" alt="Event photo"></img>`);
+      picturesList.insertAdjacentHTML(`beforeend`, `<img class="event__photo" src="${destination.pictures[i].src}" alt="${destination.pictures[i].description}"></img>`);
 
       destinationSection =
       `<section class="event__section  event__section--destination">
@@ -109,7 +110,7 @@ const createEditFormTemplate = (tripEvent, mode, offersAll, destinationsAll, cur
 
   const isCreatingPoint = mode === Mode.ADDING;
   const buttonsTemplate = isCreatingPoint ? `<button class="event__reset-btn" type="reset">Cancel</button>` :
-    `<button class="event__reset-btn" type="reset">${externalData.deleteButtonText}</button>
+    `<button class="event__reset-btn" type="reset">${externalText.deleteButtonText}</button>
     <input id="event-favorite-${id}" class="event__favorite-checkbox visually-hidden" type="checkbox" name="event-favorite" ${isFavorite ? `checked` : ``}>
     <label class="event__favorite-btn" for="event-favorite-${id}">
       <span class="visually-hidden">Add to favorite</span>
@@ -134,7 +135,7 @@ const createEditFormTemplate = (tripEvent, mode, offersAll, destinationsAll, cur
           <div class="event__type-list">
             <fieldset class="event__type-group">
               <legend class="visually-hidden">Transfer</legend>
-              ${createTypeInputMarkup(TRANSPORTS, type, id)}
+              ${createTypeInputMarkup(TRANSPORT_TYPES, type, id)}
             <fieldset class="event__type-group">
               <legend class="visually-hidden">Activity</legend>
               ${createTypeInputMarkup(ACTIVITIES, type, id)}
@@ -171,7 +172,7 @@ const createEditFormTemplate = (tripEvent, mode, offersAll, destinationsAll, cur
           <input class="event__input  event__input--price" id="event-price-${id}" type="number" name="event-price" value="${price}" required>
         </div>
 
-        <button class="event__save-btn  btn  btn--blue" type="submit">${externalData.saveButtonText}</button>
+        <button class="event__save-btn  btn  btn--blue" type="submit">${externalText.saveButtonText}</button>
         ${buttonsTemplate}
       </header>
       <section class="event__details">
@@ -182,20 +183,20 @@ const createEditFormTemplate = (tripEvent, mode, offersAll, destinationsAll, cur
   );
 };
 
-export default class EditForm extends AbstractSmartComponent {
-  constructor(tripEvent, mode, offersAll, destinationsAll) {
+export default class EditPoint extends AbstractSmartComponent {
+  constructor(point, mode, offersAll, destinationsAll) {
     super();
-    this._event = tripEvent;
-    this._type = tripEvent.type;
-    this._id = tripEvent.id;
+    this._point = point;
+    this._type = point.type;
+    this._id = point.id;
     this._currentId = this._id;
-    this._destination = tripEvent.destination;
-    this._start = tripEvent.start;
-    this._finish = tripEvent.finish;
-    this._price = tripEvent.price;
-    this._isFavorite = tripEvent.isFavorite;
-    this._offers = tripEvent.offers;
-    this._externalData = DefaultData;
+    this._destination = point.destination;
+    this._start = point.start;
+    this._end = point.end;
+    this._price = point.price;
+    this._isFavorite = point.isFavorite;
+    this._offers = point.offers;
+    this._externalText = defaultText;
     this._offersAll = offersAll;
     this._destinationsAll = destinationsAll;
 
@@ -212,108 +213,11 @@ export default class EditForm extends AbstractSmartComponent {
   }
 
   getTemplate() {
-    if (this._event.id === undefined || isNaN(Number(this._event.id))) {
-      this._currentId = Math.round(Math.random() * 100);
+    if (this._point.id === undefined || isNaN(Number(this._point.id))) {
+      this._currentId = Math.round(Math.random() * FREE_ID_MAX);
     }
 
-    return createEditFormTemplate(this._event, this._mode, this._offersAll, this._destinationsAll, this._currentId, this._externalData);
-  }
-
-  blockForm() {
-    this.getElement().querySelectorAll(`input`)
-      .forEach((input) => input.setAttribute(`disabled`, `disabled`));
-    this.getElement().querySelectorAll(`button`)
-      .forEach((button) => button.setAttribute(`disabled`, `disabled`));
-    this.getElement().querySelector(`select`)
-      .setAttribute(`disabled`, `disabled`);
-  }
-
-  unblockForm() {
-    this.getElement().querySelectorAll(`input`)
-      .forEach((input) => input.removeAttribute(`disabled`, `disabled`));
-    this.getElement().querySelectorAll(`button`)
-      .forEach((button) => button.removeAttribute(`disabled`, `disabled`));
-    this.getElement().querySelector(`select`)
-      .removeAttribute(`disabled`, `disabled`);
-  }
-
-  setData(data) {
-    this._externalData = Object.assign({}, DefaultData, data);
-    this.rerender();
-  }
-
-  recoveryListeners() {
-    this.setSubmitHandler(this._submitHandler);
-    this.setResetHandler(this._resetHandler);
-    this.setRollUpHandler(this._rollUpHandler);
-    this.setFavoriteButtonClickHandler(this._favoriteHandler);
-
-    this._subscribeOnEvents();
-  }
-
-  rerender() {
-    const oldElement = this.getElement();
-    this.removeElement();
-    const newElement = this.getElement();
-    oldElement.replaceWith(newElement);
-
-    this.recoveryListeners();
-    this._applyFlatpickr();
-  }
-
-  reset() {
-    this._event.id = this._id;
-    this._event.type = this._type;
-    this._event.destination = this._destination;
-    this._event.start = this._start;
-    this._event.finish = this._finish;
-    this._event.price = this._price;
-    this._event.isFavorite = this._isFavorite;
-    this._event.offers = this._offers;
-
-    this.rerender();
-  }
-
-  _parseFormData(formData) {
-    const type = formData.get(`event-type`);
-    let checkedOffers = [];
-
-    if (this._offersAll.length > 0) {
-      const chosenTypeOfOffers = this._offersAll.find((it) => it.type === type).offers;
-
-      checkedOffers = formData.getAll(`event-offer`).map((offer) => {
-        return chosenTypeOfOffers.find((it) => it.title === offer);
-      });
-    }
-
-    const destinationName = formData.get(`event-destination`);
-    let destination = {
-      name: destinationName,
-      description: `Failed to load description`,
-      pictures: [],
-    };
-
-    if (this._destinationsAll.length > 0) {
-      destination = this._destinationsAll.find((it) => it.name === destinationName);
-    }
-
-    let start = this._flatpickrForStart.selectedDates[0];
-    let finish = this._flatpickrForEnd.selectedDates[0];
-
-    if (this._id === undefined) {
-      this._id = this._currentId;
-    }
-
-    return new PointModel({
-      "id": this._id,
-      "type": type,
-      "destination": destination,
-      "date_from": start,
-      "date_to": finish,
-      "base_price": formData.get(`event-price`),
-      "is_favorite": Boolean(formData.get(`event-favorite`)),
-      "offers": checkedOffers,
-    });
+    return createEditPointTemplate(this._point, this._mode, this._offersAll, this._destinationsAll, this._currentId, this._externalText);
   }
 
   getData() {
@@ -321,6 +225,11 @@ export default class EditForm extends AbstractSmartComponent {
     const formData = new FormData(form);
 
     return this._parseFormData(formData);
+  }
+
+  setData(buttonText) {
+    this._externalText = Object.assign({}, defaultText, buttonText);
+    this.rerender();
   }
 
   setSubmitHandler(cb) {
@@ -347,6 +256,99 @@ export default class EditForm extends AbstractSmartComponent {
     }
   }
 
+  recoveryListeners() {
+    this.setSubmitHandler(this._submitHandler);
+    this.setResetHandler(this._resetHandler);
+    this.setRollUpHandler(this._rollUpHandler);
+    this.setFavoriteButtonClickHandler(this._favoriteHandler);
+
+    this._subscribeOnEvents();
+  }
+
+  rerender() {
+    const oldElement = this.getElement();
+    this.removeElement();
+    const newElement = this.getElement();
+    oldElement.replaceWith(newElement);
+
+    this.recoveryListeners();
+    this._applyFlatpickr();
+  }
+
+  reset() {
+    this._point.id = this._id;
+    this._point.type = this._type;
+    this._point.destination = this._destination;
+    this._point.start = this._start;
+    this._point.end = this._end;
+    this._point.price = this._price;
+    this._point.isFavorite = this._isFavorite;
+    this._point.offers = this._offers;
+
+    this.rerender();
+  }
+
+  _parseFormData(formData) {
+    const type = formData.get(`event-type`);
+    let checkedOffers = [];
+
+    if (this._offersAll.length > 0) {
+      const checkedTypeOfOffers = this._offersAll.find((it) => it.type === type).offers;
+
+      checkedOffers = formData.getAll(`event-offer`).map((offer) => {
+        return checkedTypeOfOffers.find((it) => it.title === offer);
+      });
+    }
+
+    const destinationName = formData.get(`event-destination`);
+
+    let destination = {
+      name: destinationName,
+      description: `Failed to load description`,
+      pictures: [],
+    };
+
+    if (this._destinationsAll.length > 0) {
+      destination = this._destinationsAll.find((it) => it.name === destinationName);
+    }
+
+    let start = this._flatpickrForStart.selectedDates[0];
+    let end = this._flatpickrForEnd.selectedDates[0];
+
+    if (this._id === undefined) {
+      this._id = this._currentId;
+    }
+
+    return new PointModel({
+      "id": this._id,
+      "type": type,
+      "destination": destination,
+      "date_from": start,
+      "date_to": end,
+      "base_price": formData.get(`event-price`),
+      "is_favorite": Boolean(formData.get(`event-favorite`)),
+      "offers": checkedOffers,
+    });
+  }
+
+  block() {
+    this.getElement().querySelectorAll(`input`)
+      .forEach((input) => input.setAttribute(`disabled`, `disabled`));
+    this.getElement().querySelectorAll(`button`)
+      .forEach((button) => button.setAttribute(`disabled`, `disabled`));
+    this.getElement().querySelector(`select`)
+      .setAttribute(`disabled`, `disabled`);
+  }
+
+  unblock() {
+    this.getElement().querySelectorAll(`input`)
+      .forEach((input) => input.removeAttribute(`disabled`, `disabled`));
+    this.getElement().querySelectorAll(`button`)
+      .forEach((button) => button.removeAttribute(`disabled`, `disabled`));
+    this.getElement().querySelector(`select`)
+      .removeAttribute(`disabled`, `disabled`);
+  }
+
   _applyFlatpickr() {
     const destroyFlatpickr = (currentFlatpickr) => {
       if (currentFlatpickr) {
@@ -364,15 +366,15 @@ export default class EditForm extends AbstractSmartComponent {
 
     const onChange = () => {
       let start = this._flatpickrForStart.selectedDates[0];
-      let finish = this._flatpickrForEnd.selectedDates[0];
+      let end = this._flatpickrForEnd.selectedDates[0];
       submitButton.disabled = false;
-      if (start > finish) {
+      if (start > end) {
         submitButton.disabled = true;
       }
     };
 
-    this._flatpickrForStart = flatpickr(startDateElement, createStartFlatpickr(this._event, onChange));
-    this._flatpickrForEnd = flatpickr(endDateElement, createFinishFlatpickr(this._event, onChange));
+    this._flatpickrForStart = flatpickr(startDateElement, createStartFlatpickr(this._point, onChange));
+    this._flatpickrForEnd = flatpickr(endDateElement, createEndFlatpickr(this._point, onChange));
   }
 
   _subscribeOnEvents() {
@@ -381,52 +383,52 @@ export default class EditForm extends AbstractSmartComponent {
     element.querySelectorAll(`.event__type-group`)
     .forEach((it) => it
       .addEventListener(`change`, (evt) => {
-        this._event.type = evt.target.value;
-        this._event.offers = [];
+        this._point.type = evt.target.value;
+        this._point.offers = [];
         this.rerender();
       }));
 
     element.querySelector(`.event__input--destination`)
       .addEventListener(`change`, (evt) => {
-        this._event.destination = this._destinationsAll.find((it) => it.name === evt.target.value);
+        this._point.destination = this._destinationsAll.find((it) => it.name === evt.target.value);
         this.rerender();
       });
 
     element.querySelectorAll(`input[name=event-start-time]`)
     .forEach((it) => it
       .addEventListener(`change`, (evt) => {
-        this._event.start = evt.target.value;
+        this._point.start = evt.target.value;
       }));
 
     element.querySelectorAll(`input[name=event-end-time]`)
     .forEach((it) => it
       .addEventListener(`change`, (evt) => {
-        this._event.finish = evt.target.value;
+        this._point.end = evt.target.value;
       }));
 
     element.querySelectorAll(`.event__input--price`)
     .forEach((it) => it
       .addEventListener(`change`, (evt) => {
-        this._event.price = evt.target.value;
+        this._point.price = evt.target.value;
       }));
 
     element.querySelectorAll(`.event__favorite-checkbox`)
     .forEach((it) => it
       .addEventListener(`change`, (evt) => {
-        this._event.isFavorite = evt.target.checked;
+        this._point.isFavorite = evt.target.checked;
       }));
 
     element.querySelectorAll(`.event__offer-checkbox`)
     .forEach((it) => it
       .addEventListener(`change`, (evt) => {
-        const chosenTypeOfOffers = this._offersAll.find((offersType) => offersType.type === this._event.type).offers;
-        let newOffer = chosenTypeOfOffers.find((offer) => offer.title === evt.target.value);
+        const checkedTypeOfOffers = this._offersAll.find((offersType) => offersType.type === this._point.type).offers;
+        let newOffer = checkedTypeOfOffers.find((offer) => offer.title === evt.target.value);
 
         if (it.checked) {
-          this._event.offers.push(newOffer);
+          this._point.offers.push(newOffer);
         } else {
-          let index = this._event.offers.indexOf(newOffer);
-          this._event.offers.splice(index);
+          let index = this._point.offers.indexOf(newOffer);
+          this._point.offers.splice(index);
         }
       }));
   }

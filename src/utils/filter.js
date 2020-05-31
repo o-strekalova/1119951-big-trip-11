@@ -4,28 +4,28 @@ export const FilterType = {
   PAST: `past`,
 };
 
-export const getFutureEvents = (tripEvents, date) => {
-  return tripEvents.filter((tripEvent) => {
-    return tripEvent.start > date;
+export const getFuturePoints = (points, date) => {
+  return points.filter((point) => {
+    return point.start > date;
   });
 };
 
-export const getPastEvents = (tripEvents, date) => {
-  return tripEvents.filter((tripEvent) => {
-    return tripEvent.finish < date;
+export const getPastPoints = (points, date) => {
+  return points.filter((point) => {
+    return point.end < date;
   });
 };
 
-export const getEventsByFilter = (tripEvents, filterType) => {
+export const getPointsByFilter = (points, filterType) => {
   const nowDate = new Date();
 
   switch (filterType) {
     case FilterType.EVERYTHING:
-      return tripEvents;
+      return points;
     case FilterType.FUTURE:
-      return getFutureEvents(tripEvents, nowDate);
+      return getFuturePoints(points, nowDate);
     case FilterType.PAST:
-      return getPastEvents(tripEvents, nowDate);
+      return getPastPoints(points, nowDate);
   }
-  return tripEvents;
+  return points;
 };

@@ -3,7 +3,7 @@ export default class Point {
     this.id = data[`id`];
     this.price = Number(data[`base_price`]);
     this.start = new Date(data[`date_from`]);
-    this.finish = new Date(data[`date_to`]);
+    this.end = new Date(data[`date_to`]);
     this.destination = data[`destination`];
     this.isFavorite = Boolean(data[`is_favorite`]);
     this.offers = data[`offers`];
@@ -15,7 +15,7 @@ export default class Point {
       "id": String(this.id),
       "base_price": this.price,
       "date_from": this.start,
-      "date_to": this.finish,
+      "date_to": this.end,
       "destination": this.destination,
       "is_favorite": this.isFavorite,
       "offers": this.offers,

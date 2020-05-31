@@ -2,6 +2,11 @@ import Point from "./models/point.js";
 import Offer from "./models/offer.js";
 import Destination from "./models/destination.js";
 
+const Status = {
+  OK: 200,
+  FAIL: 300
+};
+
 const Method = {
   GET: `GET`,
   POST: `POST`,
@@ -10,14 +15,14 @@ const Method = {
 };
 
 const checkStatus = (response) => {
-  if (response.status >= 200 && response.status < 300) {
+  if (response.status >= Status.OK && response.status < Status.FAIL) {
     return response;
   } else {
     throw new Error(`${response.status}: ${response.statusText}`);
   }
 };
 
-const API = class {
+export default class API {
   constructor(endPoint, authorization) {
     this._endPoint = endPoint;
     this._authorization = authorization;
@@ -76,6 +81,4 @@ const API = class {
         throw err;
       });
   }
-};
-
-export default API;
+}

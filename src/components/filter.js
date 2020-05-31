@@ -37,6 +37,8 @@ export default class Filter extends AbstractComponent {
   }
 
   resetFilter() {
-    this.getElement().querySelector(`#filter-everything`).checked = true;
+    this.getElement()
+      .querySelector(`#filter-everything`)
+      .checked = true;
   }
 }

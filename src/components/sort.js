@@ -64,6 +64,8 @@ export default class Sort extends AbstractComponent {
   }
 
   resetSortType() {
-    this.getElement().querySelector(`#sort-event`).checked = true;
+    this.getElement()
+    .querySelector(`#sort-event`)
+    .checked = true;
   }
 }
