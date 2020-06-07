@@ -1,6 +1,6 @@
-import Point from "./models/point.js";
-import Offer from "./models/offer.js";
-import Destination from "./models/destination.js";
+import Point from "../models/point.js";
+import Offer from "../models/offer.js";
+import Destination from "../models/destination.js";
 
 const Status = {
   OK: 200,
@@ -70,6 +70,16 @@ export default class API {
     })
       .then((response) => response.json())
       .then(Point.parsePoint);
+  }
+
+  sync(data) {
+    return this._load({
+      url: `points/sync`,
+      method: Method.POST,
+      body: JSON.stringify(data),
+      headers: new Headers({"Content-Type": `application/json`})
+    })
+      .then((response) => response.json());
   }
 
   _load({url, method = Method.GET, body = null, headers = new Headers()}) {

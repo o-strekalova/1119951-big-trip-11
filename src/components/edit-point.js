@@ -3,10 +3,9 @@ import PointModel from "./../models/point.js";
 import {Mode} from "../controllers/point-controller.js";
 import {ACTIVITIES, TRANSPORT_TYPES, getPreposition} from "./../utils/common.js";
 import {createStartFlatpickr, createEndFlatpickr} from "./../utils/flatpickr.js";
+import {nanoid} from "nanoid";
 import flatpickr from "flatpickr";
 import "flatpickr/dist/flatpickr.min.css";
-
-const FREE_ID_MAX = 100;
 
 const defaultText = {
   deleteButtonText: `Delete`,
@@ -215,7 +214,7 @@ export default class EditPoint extends AbstractSmartComponent {
 
   getTemplate() {
     if (this._point.id === undefined || isNaN(Number(this._point.id))) {
-      this._currentId = Math.round(Math.random() * FREE_ID_MAX);
+      this._currentId = nanoid();
     }
 
     return createEditPointTemplate(this._point, this._mode, this._offersAll, this._destinationsAll, this._currentId, this._externalText);
