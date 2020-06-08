@@ -30,4 +30,8 @@ export default class FilterController {
   _onReset() {
     this._filterComponent.resetFilter();
   }
+
+  setOnClickHandler(handler) {
+    this._filterComponent.setOnClickHandler(handler);
+  }
 }

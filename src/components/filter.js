@@ -41,4 +41,13 @@ export default class Filter extends AbstractComponent {
       .querySelector(`#filter-everything`)
       .checked = true;
   }
+
+  setOnClickHandler(handler) {
+    this.getElement().addEventListener(`click`, (evt) => {
+      if (evt.target.tagName !== `LABEL`) {
+        return;
+      }
+      handler();
+    });
+  }
 }

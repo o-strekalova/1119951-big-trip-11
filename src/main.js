@@ -62,6 +62,12 @@ siteMenuComponent.setOnChange((menuItem) => {
   }
 });
 
+filterController.setOnClickHandler(() => {
+  statisticsComponent.hide();
+  tripController.show();
+  siteMenuComponent.setActiveItem(MenuItem.TABLE);
+});
+
 apiWithProvider.getPoints()
   .then((points) => {
     pointsModel.setPoints(points);

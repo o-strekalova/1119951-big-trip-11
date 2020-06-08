@@ -98,6 +98,7 @@ export default class TripController {
   hide() {
     this._onSortTypeChange(SortType.EVENT);
     this._sort.resetSortType();
+    this._container.hide();
   }
 
   show() {
@@ -183,7 +184,6 @@ export default class TripController {
   }
 
   _onFilterChange() {
-    this._container.show();
     this._updatePoints();
     this._sort.resetSortType();
     this._onSortTypeChange(SortType.EVENT);

@@ -19,7 +19,7 @@ export default class SiteMenu extends AbstractComponent {
     return createSiteMenuTemplate();
   }
 
-  _setActiveItem(menuItem) {
+  setActiveItem(menuItem) {
     this.getElement().querySelectorAll(`.trip-tabs__btn`)
       .forEach((it) => {
         if (it.textContent === menuItem) {
@@ -36,7 +36,7 @@ export default class SiteMenu extends AbstractComponent {
         return;
       }
       const menuItem = evt.target.textContent;
-      this._setActiveItem(menuItem);
+      this.setActiveItem(menuItem);
       handler(menuItem);
     });
   }
