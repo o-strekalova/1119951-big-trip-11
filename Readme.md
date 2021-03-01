@@ -1,52 +1,20 @@
-# Личный проект «Большое путешествие» [![Build status][travis-image]][travis-url]
+# Personal project «Big Trip»
 
-* Студент: [Ольга Стрекалова](https://up.htmlacademy.ru/ecmascript/11/user/1119951).
-* Наставник: [Артемий Бойков](https://htmlacademy.ru/profile/id607755).
+It’s an SPA made with JavaScript (ES6) using OOP principles and MVC design pattern.
 
----
+## How to run the project:
 
-_Не удаляйте и не изменяйте папки и файлы:_
-_`.editorconfig`, `.gitattributes`, `.travis.yml`._
+1.	Clone the repository
+`git clone git@github.com:o-strekalova/1119951-big-trip-11.git`
+2.	Install dependencies
+`npm i`
+3.	Run web serever
+`npm start`
 
----
+This project is made to help you with planning activities during your trip. It downloads saved destinations, offers and activities from this server: https://11.ecmascript.pages.academy/big-trip/ using REST methods.
 
-### Памятка
+You can save new points of your plan, update, delete and favorite them. They’ll be automatically added to your calendar based on the chosen date.
 
-#### 1. Зарегистрируйтесь на Гитхабе
+Filter allows you to see past and future events. You can also sort the events based on the price and the time they take.
 
-Если у вас ещё нет аккаунта на [github.com](https://github.com/join), скорее зарегистрируйтесь.
-
-#### 2. Создайте форк
-
-Откройте репозиторий и нажмите кнопку «Fork» в правом верхнем углу. Репозиторий из Академии будет скопирован в ваш аккаунт.
-
-<img width="769" alt="Press 'Fork'" src="https://cloud.githubusercontent.com/assets/259739/20264045/a1ddbf40-aa7a-11e6-9a1a-724a1c0123c8.png">
-
-Получится вот так:
-
-<img width="769" alt="Forked" src="https://cloud.githubusercontent.com/assets/259739/20264122/f63219a6-aa7a-11e6-945a-89818fc7c014.png">
-
-#### 3. Клонируйте репозиторий на свой компьютер
-
-Будьте внимательны: нужно клонировать свой репозиторий (форк), а не репозиторий Академии. Также обратите внимание, что клонировать репозиторий нужно через SSH, а не через HTTPS. Нажмите зелёную кнопку в правой части экрана, чтобы скопировать SSH-адрес вашего репозитория:
-
-<img width="769" alt="SSH" src="https://cloud.githubusercontent.com/assets/259739/20264180/42704126-aa7b-11e6-9ab4-73372b812a53.png">
-
-Клонировать репозиторий можно так:
-
-```
-git clone SSH-адрес_вашего_форка
-```
-
-Команда клонирует репозиторий на ваш компьютер и подготовит всё необходимое для старта работы.
-
-#### 4. Начинайте обучение!
-
----
-
-<a href="https://htmlacademy.ru/intensive/ecmascript"><img align="left" width="50" height="50" title="HTML Academy" src="https://up.htmlacademy.ru/static/img/intensive/ecmascript/logo-for-github.svg"></a>
-
-Репозиторий создан для обучения на интенсивном онлайн‑курсе «[Профессиональный JavaScript, уровень 2](https://htmlacademy.ru/intensive/ecmascript)» от [HTML Academy](https://htmlacademy.ru).
-
-[travis-image]: https://travis-ci.com/htmlacademy-ecmascript/1119951-big-trip-11.svg?branch=master
-[travis-url]: https://travis-ci.com/htmlacademy-ecmascript/1119951-big-trip-11
+Stats section shows graphs based on the saved events.
