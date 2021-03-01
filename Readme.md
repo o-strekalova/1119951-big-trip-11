@@ -11,6 +11,8 @@ It’s an SPA made with JavaScript (ES6) using OOP principles and MVC design pat
 3.	Run web serever
 `npm start`
 
+## Description
+
 This project is made to help you with planning activities during your trip. It downloads saved destinations, offers and activities from this server: https://11.ecmascript.pages.academy/big-trip/ using REST methods.
 
 You can save new points of your plan, update, delete and favorite them. They’ll be automatically added to your calendar based on the chosen date.
